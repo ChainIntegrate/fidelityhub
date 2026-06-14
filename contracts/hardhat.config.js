@@ -15,7 +15,7 @@ module.exports = {
     luksoTestnet: {
       url: "https://rpc.testnet.lukso.network",
       chainId: 4201,
-      accounts: [(process.env.ADMIN_PRIVATE_KEY || process.env.PRIVATE_KEY).replace('0x', '')],
+      accounts: [process.env.PRIVATE_KEY.replace('0x', '')],
     },
   },
 };

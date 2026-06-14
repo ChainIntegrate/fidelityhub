@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://31.14.140.170/api",
+  baseURL: "https://app.chainintegrate.it/api",
   headers: { "Content-Type": "application/json" },
 });
 

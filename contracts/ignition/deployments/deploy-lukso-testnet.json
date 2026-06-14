@@ -1,19 +1,20 @@
 {
   "network": "lukso-testnet",
   "chainId": 4201,
-  "deployedAt": "2026-06-13",
+  "deployedAt": "2026-06-14",
   "contracts": {
     "FidelityToken": {
-      "address": "0x60A1EE4E3DdC390e89BEE9Ef5c55293fc6CdA6AB",
+      "address": "0xdB419a51801347de1FcF6F6805e64c095DBD4881",
       "standard": "LSP7",
-      "license": "BUSL-1.1"
+      "license": "BUSL-1.1",
+      "isNonDivisible": true
     },
     "FidelityBadge": {
-      "address": "0x6Cc3925a5a97ad528DA992AA4d6854C0Bd4068ad",
+      "address": "0x82FCf1E3Ef4DB500c32900897FCc5bdBCC76b7F4",
       "standard": "LSP8",
       "license": "BUSL-1.1"
     }
   },
   "deployer": "0x84B883180265948505BFe49F0b78e1dAaECa0156",
-  "adminCliente": "0xAa18E265Bb38cD507eD018AF9abf0FeF16E685C9"
+  "adminCliente": "0x30D5e2c9BEc1A75515b88d6c80528e9003AeA9EF"
 }

@@ -33,7 +33,7 @@ contract FidelityToken is LSP7DigitalAsset {
         symbol,
         owner,
         0,
-        false
+        true    // isNonDivisible = true → decimals = 0, solo interi
     ) {}
 
 // ── Carica Punti (mint) ────────────────────────────────────────────────────

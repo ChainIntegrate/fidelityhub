@@ -146,9 +146,9 @@ router.post("/crea", async (req, res) => {
 if (pin && email) {
   try {
     await inviaPin(email, nome, pin);
+    console.log(`✅ Email PIN inviata a ${email}`);
   } catch(e) {
-    console.error("Errore invio email:", e.message);
-    // Non blocchiamo la creazione se l'email fallisce
+    console.error("❌ Errore invio email:", e.message);
   }
 }
 

@@ -856,11 +856,12 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
       else { walletType = "UP"; existingAddress = f.upAddress.trim(); }
 
       const res = await api.creaCliente({
-        nome: f.nome.trim(), cognome: f.cognome.trim(),
-        luogo: f.luogo.trim(), dataNascita: f.dataNascita,
-        walletType, existingAddress,
-        isMigrazione: isMig, migrazioneId: isMig ? migId : null,
-      });
+  nome: f.nome.trim(), cognome: f.cognome.trim(),
+  luogo: f.luogo.trim(), dataNascita: f.dataNascita,
+  email: f.email.trim(),
+  walletType, existingAddress,
+  isMigrazione: isMig, migrazioneId: isMig ? migId : null,
+});
       setResult(res.data.data);
     } catch(e) {
       setErr(e.response?.data?.error || "Errore creazione cliente");

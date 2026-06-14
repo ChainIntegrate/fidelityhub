@@ -190,10 +190,16 @@ function Login({ onLogin }) {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const doAdmin = () => {
-    if (f.email === "admin@fidelityhub.io" && f.pass === "admin123") onLogin({ role:"admin" });
-    else setErr("Credenziali non valide");
-  };
+  const doAdmin = async () => {
+  setErr(""); setLoading(true);
+  try {
+    await api.loginAdmin(f.email, f.pass);
+    onLogin({ role:"admin" });
+  } catch(e) {
+    setErr(e.response?.data?.error || "Credenziali non valide");
+  }
+  setLoading(false);
+};
 
   const doClient = async () => {
     if (f.codice.length < 6) { setErr("Inserisci il PIN completo a 6 cifre"); return; }
@@ -231,7 +237,9 @@ function Login({ onLogin }) {
             <>
               <div className="fg"><label className="fl">Email</label><input className="fi" type="email" placeholder="admin@fidelityhub.io" value={f.email} onChange={e=>setF({...f,email:e.target.value})} /></div>
               <div className="fg"><label className="fl">Password</label><input className="fi" type="password" placeholder="••••••••" value={f.pass} onChange={e=>setF({...f,pass:e.target.value})} onKeyDown={e=>e.key==="Enter"&&doAdmin()} /></div>
-              <button className="btn btn-p" style={{width:"100%",justifyContent:"center"}} onClick={doAdmin}>Accedi al Gestionale</button>
+              <button className="btn btn-p" style={{width:"100%",justifyContent:"center"}} disabled={loading} onClick={doAdmin}>
+  {loading ? "Verifica in corso…" : "Accedi al Gestionale"}
+</button>
               <p style={{fontSize:11,color:"#8E8E9A",textAlign:"center",marginTop:10}}>admin@fidelityhub.io / admin123</p>
             </>
           ) : (

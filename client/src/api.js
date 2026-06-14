@@ -34,3 +34,5 @@ export const getHealth         = ()         => API.get("/health");
 export const loginCliente  = (pin)  => API.post("/clienti/login", { pin });
 export const getPinCliente = (id)   => API.get(`/clienti/${id}/pin`);
 export const getStorico = (id) => API.get(`/clienti/${id}/storico`);
+
+export const loginAdmin = (email, password) => API.post("/auth/login", { email, password });

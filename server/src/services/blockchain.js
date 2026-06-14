@@ -8,6 +8,10 @@ const TOKEN_ABI = [
   "function saldoCliente(address cliente) external view returns (uint256)",
   "function supplyTotale() external view returns (uint256)",
   "function totalSupply() external view returns (uint256)",
+  // ── Eventi ──────────────────────────────────────────────────────────────────
+  "event PointsLoaded(address indexed to, uint256 amount, string note)",
+  "event PointsScaled(address indexed from, uint256 amount, string note)",
+  "event PointsTransferred(address indexed from, address indexed to, uint256 amount, string note)",
 ];
 
 const BADGE_ABI = [
@@ -21,6 +25,10 @@ const BADGE_ABI = [
   "function aggiungiBadge(string calldata nome, string calldata descrizione, string calldata immagineURI) external",
   "function disattivaBadge(uint256 tipoId) external",
   "function numeroTipi() external view returns (uint256)",
+  // ── Eventi ──────────────────────────────────────────────────────────────────
+  "event BadgeAssegnato(address indexed cliente, uint256 indexed tipoId, bytes32 tokenId)",
+  "event BadgeRevocato(address indexed cliente, uint256 indexed tipoId, bytes32 tokenId)",
+  "event BadgeTrasferito(address indexed da, address indexed a, uint256 indexed tipoId, bytes32 tokenId)",
 ];
 
 // ── Setup provider e signer ────────────────────────────────────────────────────
@@ -122,18 +130,76 @@ async function aggiungiBadge(nome, descrizione, immagineURI) {
   return tx.hash;
 }
 
+async function getStorico(address) {
+  const fromBlock = 0n;
+
+  // Filtri eventi LSP7
+  const filterCarica    = tokenContract.filters.PointsLoaded(address);
+  const filterScala     = tokenContract.filters.PointsScaled(address);
+  const filterTxIn      = tokenContract.filters.PointsTransferred(null, address);
+  const filterTxOut     = tokenContract.filters.PointsTransferred(address);
+
+  // Filtri eventi LSP8
+  const filterBadgeIn   = badgeContract.filters.BadgeAssegnato(address);
+  const filterBadgeRev  = badgeContract.filters.BadgeRevocato(address);
+  const filterBadgeTxIn = badgeContract.filters.BadgeTrasferito(null, address);
+  const filterBadgeTxOut= badgeContract.filters.BadgeTrasferito(address);
+
+  const [
+    evCarica, evScala, evTxIn, evTxOut,
+    evBadgeIn, evBadgeRev, evBadgeTxIn, evBadgeTxOut
+  ] = await Promise.all([
+    tokenContract.queryFilter(filterCarica,    fromBlock),
+    tokenContract.queryFilter(filterScala,     fromBlock),
+    tokenContract.queryFilter(filterTxIn,      fromBlock),
+    tokenContract.queryFilter(filterTxOut,     fromBlock),
+    badgeContract.queryFilter(filterBadgeIn,   fromBlock),
+    badgeContract.queryFilter(filterBadgeRev,  fromBlock),
+    badgeContract.queryFilter(filterBadgeTxIn, fromBlock),
+    badgeContract.queryFilter(filterBadgeTxOut,fromBlock),
+  ]);
+
+  const eventi = [];
+
+  for (const e of evCarica) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"carica", qty: Number(e.args.amount), nota: e.args.note, hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+  for (const e of evScala) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"scala", qty: Number(e.args.amount), nota: e.args.note, hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+  for (const e of evTxIn) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"trasferisci_in", qty: Number(e.args.amount), nota: e.args.note, da: e.args.from, hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+  for (const e of evTxOut) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"trasferisci_out", qty: Number(e.args.amount), nota: e.args.note, a: e.args.to, hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+  for (const e of evBadgeIn) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"badge_in", tipoId: Number(e.args.tipoId), hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+  for (const e of evBadgeRev) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"badge_rev", tipoId: Number(e.args.tipoId), hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+  for (const e of evBadgeTxIn) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"badge_tx_in", tipoId: Number(e.args.tipoId), da: e.args.da, hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+  for (const e of evBadgeTxOut) {
+    const block = await provider.getBlock(e.blockNumber);
+    eventi.push({ tipo:"badge_tx_out", tipoId: Number(e.args.tipoId), a: e.args.a, hash: e.transactionHash, ts: block.timestamp * 1000 });
+  }
+
+  return eventi.sort((a,b) => b.ts - a.ts);
+}
+
 module.exports = {
-  init,
-  caricaPunti,
-  scalaPunti,
-  trasferisciPunti,
-  getSaldo,
-  getSupplyTotale,
-  assegnaBadge,
-  revocaBadge,
-  trasferisciBadge,
-  getBadgeCliente,
-  haIlBadge,
-  getTuttiBadge,
-  aggiungiBadge,
+  init, caricaPunti, scalaPunti, trasferisciPunti,
+  getSaldo, getSupplyTotale, getStorico,
+  assegnaBadge, revocaBadge, trasferisciBadge,
+  getBadgeCliente, haIlBadge, getTuttiBadge, aggiungiBadge,
 };

@@ -18,67 +18,67 @@ const LIVELLI_META = {
   5: { label:"Top Cliente",   icon:"⭐", color: C.amber  },
 };
 
-// ── Utils ──────────────────────────────────────────────────────────────────────
-const fullName = u => `${u.nome} ${u.cognome}`;
-const fmtD     = ts => new Date(ts).toLocaleDateString("it-IT",{day:"2-digit",month:"short",year:"numeric"});
-const avBg     = n => { const p=["#5151FF","#00C48C","#FF4757","#FFB020","#9B59B6","#00B8D9"]; let h=0; for(let c of(n||"?"))h=c.charCodeAt(0)+((h<<5)-h); return p[Math.abs(h)%p.length]; };
+const fullName    = u => `${u.nome} ${u.cognome}`;
+const fmtD        = ts => new Date(ts).toLocaleDateString("it-IT",{day:"2-digit",month:"short",year:"numeric"});
+const fmtDT       = ts => new Date(ts).toLocaleDateString("it-IT",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+const avBg        = n => { const p=["#5151FF","#00C48C","#FF4757","#FFB020","#9B59B6","#00B8D9"]; let h=0; for(let c of(n||"?"))h=c.charCodeAt(0)+((h<<5)-h); return p[Math.abs(h)%p.length]; };
 const walletLabel = wt => ({EOA:"Standard",EOA_ESTERNO:"Esterno",UP:"Avanzato"}[wt]||wt);
+const blockscoutTx = hash => `https://explorer.execution.testnet.lukso.network/tx/${hash}`;
 
-// ── CSS ────────────────────────────────────────────────────────────────────────
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:${C.fog};color:${C.ink};min-height:100vh}
+body{font-family:'Inter',sans-serif;background:#F5F5F7;color:#0C0C10;min-height:100vh}
 .mono{font-family:'JetBrains Mono',monospace}
 .shell{display:flex;min-height:100vh}
-.sidebar{width:248px;background:${C.ink};flex-shrink:0;position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column}
+.sidebar{width:248px;background:#0C0C10;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column}
 .main{margin-left:248px;flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:#fff;border-bottom:1px solid ${C.line};height:60px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.topbar{background:#fff;border-bottom:1px solid #E8E8ED;height:60px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
 .page{padding:30px;flex:1}
 .sb-logo{padding:24px 20px 16px;border-bottom:1px solid #fff1}
-.sb-hex{width:34px;height:34px;background:${C.indigo};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-hex{width:34px;height:34px;background:#5151FF;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sb-name{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.4px}
 .sb-sub{font-size:10px;color:#ffffff40;letter-spacing:.6px;text-transform:uppercase;margin-top:1px}
 .sb-nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:1px}
 .sb-sect{font-size:9.5px;color:#ffffff28;letter-spacing:1.1px;text-transform:uppercase;padding:14px 12px 5px;font-weight:600}
 .sb-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;cursor:pointer;color:#ffffff60;font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all .15s;font-family:inherit}
 .sb-item:hover{background:#ffffff0d;color:#fff}
-.sb-item.on{background:${C.indigo}22;color:${C.indigo}}
+.sb-item.on{background:#5151FF22;color:#5151FF}
 .sb-foot{padding:12px 8px;border-top:1px solid #fff1}
 .net-pill{background:#ffffff07;border:1px solid #ffffff10;border-radius:8px;padding:10px 12px}
 .net-label{font-size:9px;color:#ffffff28;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;display:flex;align-items:center;gap:4px}
-.dot-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:${C.green};box-shadow:0 0 6px ${C.green}}
+.dot-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:#00C48C;box-shadow:0 0 6px #00C48C}
 .net-id{font-size:10px;color:#ffffff35;margin-top:2px}
 .tb-title{font-size:15px;font-weight:700}
 .tb-right{display:flex;align-items:center;gap:10px}
-.status-pill{background:${C.greenGh};color:${C.green};font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px;display:flex;align-items:center;gap:5px}
-.card{background:#fff;border:1px solid ${C.line};border-radius:13px}
+.status-pill{background:#00C48C13;color:#00C48C;font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px;display:flex;align-items:center;gap:5px}
+.card{background:#fff;border:1px solid #E8E8ED;border-radius:13px}
 .cp{padding:22px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
-.stat{background:#fff;border:1px solid ${C.line};border-radius:12px;padding:18px 20px}
-.stat-lbl{font-size:11px;color:${C.slate};font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.stat{background:#fff;border:1px solid #E8E8ED;border-radius:12px;padding:18px 20px}
+.stat-lbl{font-size:11px;color:#8E8E9A;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
 .stat-val{font-size:26px;font-weight:800;letter-spacing:-1px}
-.stat-sub{font-size:11px;color:${C.slate};margin-top:3px}
+.stat-sub{font-size:11px;color:#8E8E9A;margin-top:3px}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{font-size:10.5px;color:${C.slate};font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:11px 16px;text-align:left;border-bottom:1px solid ${C.line};background:${C.fog};white-space:nowrap}
-td{padding:12px 16px;font-size:13px;border-bottom:1px solid ${C.line};vertical-align:middle}
+th{font-size:10.5px;color:#8E8E9A;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:11px 16px;text-align:left;border-bottom:1px solid #E8E8ED;background:#F5F5F7;white-space:nowrap}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid #E8E8ED;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafafa}
 .bx{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
-.bx-green{background:${C.greenGh};color:${C.green}}
-.bx-red{background:${C.redGh};color:${C.red}}
-.bx-indigo{background:${C.indigoGh};color:${C.indigo}}
-.bx-amber{background:${C.amberGh};color:${C.amber}}
-.bx-purple{background:${C.purpleGh};color:${C.purple}}
-.bx-cyan{background:${C.cyanGh};color:${C.cyan}}
-.bx-gray{background:${C.fog};color:${C.slate};border:1px solid ${C.line}}
+.bx-green{background:#00C48C13;color:#00C48C}
+.bx-red{background:#FF475713;color:#FF4757}
+.bx-indigo{background:#5151FF13;color:#5151FF}
+.bx-amber{background:#FFB02013;color:#FFB020}
+.bx-purple{background:#9B59B613;color:#9B59B6}
+.bx-cyan{background:#00B8D913;color:#00B8D9}
+.bx-gray{background:#F5F5F7;color:#8E8E9A;border:1px solid #E8E8ED}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
-.btn-p{background:${C.indigo};color:#fff}
-.btn-p:hover{background:${C.indigoD}}
-.btn-g{background:transparent;color:${C.ink};border:1px solid ${C.line}}
-.btn-g:hover{background:${C.fog}}
-.btn-danger{background:${C.redGh};color:${C.red};border:1px solid ${C.red}25}
+.btn-p{background:#5151FF;color:#fff}
+.btn-p:hover{background:#3A3ACC}
+.btn-g{background:transparent;color:#0C0C10;border:1px solid #E8E8ED}
+.btn-g:hover{background:#F5F5F7}
+.btn-danger{background:#FF475713;color:#FF4757;border:1px solid #FF475725}
 .btn-sm{padding:5px 11px;font-size:11.5px}
 .btn-xs{padding:3px 8px;font-size:11px}
 .btn:disabled{opacity:.4;cursor:not-allowed}
@@ -88,65 +88,80 @@ tr:hover td{background:#fafafa}
 .mh{padding:22px 26px 0;display:flex;align-items:center;justify-content:space-between}
 .mt{font-size:17px;font-weight:800;letter-spacing:-.4px}
 .mb{padding:18px 26px 26px}
-.mx{background:${C.fog};border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:${C.slate};font-size:17px;font-family:inherit}
-.mx:hover{background:${C.line}}
+.mx{background:#F5F5F7;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8E8E9A;font-size:17px;font-family:inherit}
+.mx:hover{background:#E8E8ED}
 .fg{margin-bottom:14px}
-.fl{font-size:11px;font-weight:700;color:${C.slate};text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
-.fi{width:100%;padding:9px 12px;border:1.5px solid ${C.line};border-radius:8px;font-size:13px;font-family:inherit;color:${C.ink};background:#fff;outline:none;transition:border-color .15s}
-.fi:focus{border-color:${C.indigo}}
+.fl{font-size:11px;font-weight:700;color:#8E8E9A;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
+.fi{width:100%;padding:9px 12px;border:1.5px solid #E8E8ED;border-radius:8px;font-size:13px;font-family:inherit;color:#0C0C10;background:#fff;outline:none;transition:border-color .15s}
+.fi:focus{border-color:#5151FF}
 .fi.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
 .fi-2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.fhint{font-size:11px;color:${C.slate};margin-top:4px}
-.factions{display:flex;gap:9px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid ${C.line}}
+.fhint{font-size:11px;color:#8E8E9A;margin-top:4px}
+.factions{display:flex;gap:9px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid #E8E8ED}
 select.fi{cursor:pointer}
 .rg{display:flex;gap:10px}
-.rc{flex:1;border:1.5px solid ${C.line};border-radius:10px;padding:13px;cursor:pointer;transition:all .15s}
-.rc.sel{border-color:${C.indigo};background:${C.indigoGh}}
+.rc{flex:1;border:1.5px solid #E8E8ED;border-radius:10px;padding:13px;cursor:pointer;transition:all .15s}
+.rc.sel{border-color:#5151FF;background:#5151FF13}
 .rc-t{font-size:13px;font-weight:700;margin-bottom:2px}
-.rc-s{font-size:11.5px;color:${C.slate}}
-.kbox{background:${C.ink};border-radius:10px;padding:14px;margin:10px 0}
+.rc-s{font-size:11.5px;color:#8E8E9A}
+.kbox{background:#0C0C10;border-radius:10px;padding:14px;margin:10px 0}
 .kl{font-size:9.5px;color:#ffffff38;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
-.kv{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:${C.green};word-break:break-all;line-height:1.6}
-.kwarn{background:${C.amberGh};border:1px solid ${C.amber}28;border-radius:8px;padding:10px 13px;font-size:12px;color:${C.amber};margin:10px 0}
-.hero{background:${C.ink};border-radius:18px;padding:36px;text-align:center;position:relative;overflow:hidden;margin-bottom:22px}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,${C.indigo}38 0%,transparent 65%)}
+.kv{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#00C48C;word-break:break-all;line-height:1.6}
+.kwarn{background:#FFB02013;border:1px solid #FFB02028;border-radius:8px;padding:10px 13px;font-size:12px;color:#FFB020;margin:10px 0}
+.hero{background:#0C0C10;border-radius:18px;padding:36px;text-align:center;position:relative;overflow:hidden;margin-bottom:22px}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,#5151FF38 0%,transparent 65%)}
 .hero-lbl{font-size:12px;color:#ffffff45;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;position:relative}
 .hero-val{font-size:72px;font-weight:800;color:#fff;letter-spacing:-3px;line-height:1;position:relative}
-.hero-unit{font-size:18px;color:${C.indigo};font-weight:600;margin-top:8px;position:relative;letter-spacing:-.3px}
+.hero-unit{font-size:18px;color:#5151FF;font-weight:600;margin-top:8px;position:relative;letter-spacing:-.3px}
 .hero-id{background:#ffffff0d;border:1px solid #ffffff12;border-radius:20px;padding:5px 14px;font-size:11px;color:#ffffff40;display:inline-block;margin-top:14px;position:relative}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .st{font-size:16px;font-weight:800;letter-spacing:-.4px}
-.ss{font-size:12.5px;color:${C.slate};margin-top:2px}
-.sep{height:1px;background:${C.line};margin:16px 0}
-.div{height:1px;background:${C.line};margin:16px 0}
-.empty{text-align:center;padding:50px 20px;color:${C.slate}}
+.ss{font-size:12.5px;color:#8E8E9A;margin-top:2px}
+.sep{height:1px;background:#E8E8ED;margin:16px 0}
+.div{height:1px;background:#E8E8ED;margin:16px 0}
+.empty{text-align:center;padding:50px 20px;color:#8E8E9A}
 .empty-ico{font-size:36px;margin-bottom:10px;opacity:.35}
 .fade{animation:fade .15s ease}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.av{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.av{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:middle;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;align-items:center;justify-content:center}
 .tag-row{display:flex;flex-wrap:wrap;gap:5px}
-.info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid ${C.line};font-size:13px}
+.info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #E8E8ED;font-size:13px}
 .info-row:last-child{border-bottom:none}
-.ik{color:${C.slate}}
+.ik{color:#8E8E9A}
 .iv{font-weight:600}
-.alert-s{background:${C.greenGh};border:1px solid ${C.green}28;border-radius:8px;padding:10px 14px;font-size:12.5px;color:${C.green};margin-bottom:14px}
-.alert-e{background:${C.redGh};border:1px solid ${C.red}28;border-radius:8px;padding:10px 14px;font-size:12.5px;color:${C.red};margin-bottom:14px}
-.alert-w{background:${C.amberGh};border:1px solid ${C.amber}28;border-radius:8px;padding:10px 14px;font-size:12.5px;color:${C.amber};margin-bottom:14px}
-.mig-banner{background:linear-gradient(135deg,${C.purpleGh},${C.indigoGh});border:1px solid ${C.purple}28;border-radius:10px;padding:12px 14px;font-size:12px;color:${C.purple};display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:${C.slate};gap:10px;font-size:13px}
-.spinner{width:18px;height:18px;border:2px solid ${C.line};border-top-color:${C.indigo};border-radius:50%;animation:spin .7s linear infinite}
+.alert-s{background:#00C48C13;border:1px solid #00C48C28;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#00C48C;margin-bottom:14px}
+.alert-e{background:#FF475713;border:1px solid #FF475728;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#FF4757;margin-bottom:14px}
+.alert-w{background:#FFB02013;border:1px solid #FFB02028;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#FFB020;margin-bottom:14px}
+.mig-banner{background:linear-gradient(135deg,#9B59B613,#5151FF13);border:1px solid #9B59B628;border-radius:10px;padding:12px 14px;font-size:12px;color:#9B59B6;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:#8E8E9A;gap:10px;font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid #E8E8ED;border-top-color:#5151FF;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.tx-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #E8E8ED}
+.tx-row:last-child{border-bottom:none}
+.tx-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.tx-info{flex:1;min-width:0}
+.tx-desc{font-size:13px;font-weight:500}
+.tx-hash{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8E8E9A;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;text-decoration:underline}
+.tx-right{text-align:right;flex-shrink:0}
+.tx-amt{font-size:13.5px;font-weight:700}
+.tx-date{font-size:10.5px;color:#8E8E9A;margin-top:1px}
+.confirm-box{background:#F5F5F7;border:1px solid #E8E8ED;border-radius:10px;padding:16px;margin:14px 0}
+.confirm-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}
+.confirm-key{color:#8E8E9A}
+.confirm-val{font-weight:600}
+.pin-box{display:flex;gap:8px;justify-content:center;margin:8px 0}
+.pin-digit{width:48px;height:56px;background:#0C0C10;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#00C48C}
 input[type=number]{-moz-appearance:textfield}
 input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
 `;
 
-// ── Icons ──────────────────────────────────────────────────────────────────────
 const Ic = {
   dash:    <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
   clienti: <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
   ops:     <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
   livelli: <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>,
+  storico: <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
   chiave:  <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>,
   esci:    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
   plus:    <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
@@ -155,9 +170,9 @@ const Ic = {
   arch:    <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>,
   profilo: <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
   refresh: <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>,
+  link:    <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
 };
 
-// ── Spinner ────────────────────────────────────────────────────────────────────
 const Spinner = () => <div className="loading"><div className="spinner"/><span>Caricamento...</span></div>;
 
 // ── App root ───────────────────────────────────────────────────────────────────
@@ -181,18 +196,19 @@ function Login({ onLogin }) {
   };
 
   const doClient = async () => {
-  setErr(""); setLoading(true);
-  try {
-    const res = await api.loginCliente(f.codice.trim());
-    onLogin({ role:"client", uid: res.data.data.id });
-  } catch(e) {
-    setErr(e.response?.data?.error || "Codice di accesso non valido");
-  }
-  setLoading(false);
-};
+    if (f.codice.length < 6) { setErr("Inserisci il PIN completo a 6 cifre"); return; }
+    setErr(""); setLoading(true);
+    try {
+      const res = await api.loginCliente(f.codice.trim());
+      onLogin({ role:"client", uid: res.data.data.id });
+    } catch(e) {
+      setErr(e.response?.data?.error || "PIN non valido");
+    }
+    setLoading(false);
+  };
 
   return (
-    <div style={{minHeight:"100vh",background:C.fog,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+    <div style={{minHeight:"100vh",background:"#F5F5F7",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <style>{CSS}</style>
       <div style={{width:"100%",maxWidth:400}}>
         <div style={{textAlign:"center",marginBottom:28}}>
@@ -200,12 +216,12 @@ function Login({ onLogin }) {
             <div className="sb-hex"><svg width="17" height="17" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/></svg></div>
             <span style={{fontSize:22,fontWeight:800,letterSpacing:-.6}}>FidelityHub</span>
           </div>
-          <p style={{fontSize:12.5,color:C.slate}}>Piattaforma fedeltà professionale</p>
+          <p style={{fontSize:12.5,color:"#8E8E9A"}}>Piattaforma fedeltà professionale</p>
         </div>
         <div className="card cp">
-          <div style={{display:"flex",background:C.fog,borderRadius:9,padding:4,gap:3,marginBottom:20}}>
+          <div style={{display:"flex",background:"#F5F5F7",borderRadius:9,padding:4,gap:3,marginBottom:20}}>
             {[["admin","Gestionale"],["client","Area Cliente"]].map(([t,l])=>(
-              <button key={t} onClick={()=>{setTab(t);setErr("");}} style={{flex:1,padding:"7px 0",border:"none",borderRadius:7,fontFamily:"inherit",fontSize:13,fontWeight:tab===t?700:500,cursor:"pointer",background:tab===t?"#fff":"transparent",color:tab===t?C.ink:C.slate,transition:"all .15s"}}>
+              <button key={t} onClick={()=>{setTab(t);setErr("");setF({email:"",pass:"",codice:""});}} style={{flex:1,padding:"7px 0",border:"none",borderRadius:7,fontFamily:"inherit",fontSize:13,fontWeight:tab===t?700:500,cursor:"pointer",background:tab===t?"#fff":"transparent",color:tab===t?"#0C0C10":"#8E8E9A",transition:"all .15s"}}>
                 {l}
               </button>
             ))}
@@ -216,20 +232,97 @@ function Login({ onLogin }) {
               <div className="fg"><label className="fl">Email</label><input className="fi" type="email" placeholder="admin@fidelityhub.io" value={f.email} onChange={e=>setF({...f,email:e.target.value})} /></div>
               <div className="fg"><label className="fl">Password</label><input className="fi" type="password" placeholder="••••••••" value={f.pass} onChange={e=>setF({...f,pass:e.target.value})} onKeyDown={e=>e.key==="Enter"&&doAdmin()} /></div>
               <button className="btn btn-p" style={{width:"100%",justifyContent:"center"}} onClick={doAdmin}>Accedi al Gestionale</button>
-              <p style={{fontSize:11,color:C.slate,textAlign:"center",marginTop:10}}>admin@fidelityhub.io / admin123</p>
+              <p style={{fontSize:11,color:"#8E8E9A",textAlign:"center",marginTop:10}}>admin@fidelityhub.io / admin123</p>
             </>
           ) : (
             <>
               <div className="fg">
-                <label className="fl">Codice di Accesso</label>
-                <textarea className="fi mono" rows={3} placeholder="Inserisci il codice ricevuto…" value={f.codice} onChange={e=>setF({...f,codice:e.target.value})} style={{resize:"none",lineHeight:1.6}} />
-                <p className="fhint">Il codice ti è stato fornito al momento della registrazione</p>
+                <label className="fl" style={{textAlign:"center",display:"block"}}>PIN di Accesso</label>
+                <div style={{display:"flex",gap:8,justifyContent:"center",margin:"8px 0"}}>
+                  {[0,1,2,3,4,5].map(i=>(
+                    <input
+                      key={i}
+                      id={`pin-${i}`}
+                      className="fi"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={f.codice[i]||""}
+                      style={{width:48,height:56,textAlign:"center",fontSize:22,fontWeight:700,padding:0}}
+                      onChange={e=>{
+                        const val = e.target.value.replace(/\D/,"");
+                        const arr = (f.codice+"      ").split("").slice(0,6);
+                        arr[i] = val;
+                        setF({...f, codice: arr.join("").trimEnd()});
+                        if (val && i<5) document.getElementById(`pin-${i+1}`)?.focus();
+                      }}
+                      onKeyDown={e=>{
+                        if (e.key==="Backspace" && !f.codice[i] && i>0) document.getElementById(`pin-${i-1}`)?.focus();
+                        if (e.key==="Enter" && f.codice.length===6) doClient();
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="fhint" style={{textAlign:"center"}}>Inserisci il PIN a 6 cifre ricevuto alla registrazione</p>
               </div>
               <button className="btn btn-p" style={{width:"100%",justifyContent:"center"}} disabled={loading} onClick={doClient}>
                 {loading ? "Verifica in corso…" : "Accedi alla mia Area"}
               </button>
             </>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Conferma Modal ─────────────────────────────────────────────────────────────
+function ModalConferma({ titolo, righe, onConferma, onAnnulla, loading }) {
+  return (
+    <div className="ov" onClick={e=>e.target===e.currentTarget&&onAnnulla()}>
+      <div className="modal" style={{maxWidth:420}}>
+        <div className="mh"><div className="mt">⚠️ Conferma operazione</div><button className="mx" onClick={onAnnulla}>×</button></div>
+        <div className="mb">
+          <div style={{fontSize:13,color:"#8E8E9A",marginBottom:14}}>{titolo}</div>
+          <div className="confirm-box">
+            {righe.map(([k,v])=>(
+              <div key={k} className="confirm-row"><span className="confirm-key">{k}</span><span className="confirm-val">{v}</span></div>
+            ))}
+          </div>
+          <div className="factions">
+            <button className="btn btn-g" onClick={onAnnulla} disabled={loading}>Annulla</button>
+            <button className="btn btn-p" onClick={onConferma} disabled={loading}>
+              {loading ? "Transazione in corso…" : "Conferma e Invia"}
+            </button>
+          </div>
+          {loading && <p style={{fontSize:11,color:"#8E8E9A",textAlign:"center",marginTop:8}}>Attendere, la transazione viene registrata su LUKSO…</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Risultato Transazione ──────────────────────────────────────────────────────
+function RisultatoTx({ titolo, txHash, dettagli, onChiudi }) {
+  return (
+    <div className="ov" onClick={e=>e.target===e.currentTarget&&onChiudi()}>
+      <div className="modal" style={{maxWidth:420}}>
+        <div className="mh"><div className="mt">✅ {titolo}</div><button className="mx" onClick={onChiudi}>×</button></div>
+        <div className="mb">
+          <div className="alert-s">Operazione completata e registrata su LUKSO</div>
+          {dettagli && dettagli.map(([k,v])=>(
+            <div key={k} className="info-row"><span className="ik">{k}</span><span className="iv">{v}</span></div>
+          ))}
+          <div style={{marginTop:14}}>
+            <div style={{fontSize:11,color:"#8E8E9A",marginBottom:6}}>Hash Transazione</div>
+            <div style={{background:"#0C0C10",borderRadius:8,padding:10,fontFamily:"JetBrains Mono,monospace",fontSize:10,color:"#00C48C",wordBreak:"break-all",lineHeight:1.6}}>
+              {txHash}
+            </div>
+            <a href={blockscoutTx(txHash)} target="_blank" rel="noopener noreferrer" className="btn btn-g btn-sm" style={{marginTop:8,textDecoration:"none"}}>
+              {Ic.link} Verifica su Blockscout
+            </a>
+          </div>
+          <div className="factions"><button className="btn btn-p" onClick={onChiudi}>Chiudi</button></div>
         </div>
       </div>
     </div>
@@ -249,21 +342,20 @@ function AdminApp({ onLogout }) {
       const [cRes, sRes] = await Promise.all([api.getClienti(), api.getSupply()]);
       setClienti(cRes.data.data);
       setSupply(sRes.data.data.supply);
-    } catch (e) {
-      console.error("Errore caricamento dati:", e);
-    }
+    } catch(e) { console.error("Errore:", e); }
     setLoading(false);
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const nav = [
+ const nav = [
     {id:"dash",    l:"Dashboard",         ic:Ic.dash},
     {id:"clienti", l:"Clienti",           ic:Ic.clienti},
     {id:"ops",     l:"Gestione Stelle",   ic:Ic.ops},
     {id:"livelli", l:"Riconoscimenti",    ic:Ic.livelli},
+    {id:"storico", l:"Storico",           ic:Ic.storico},
   ];
-  const titles = {dash:"Dashboard",clienti:"Clienti",ops:"Gestione Stelle",livelli:"Riconoscimenti"};
+  const titles = {dash:"Dashboard",clienti:"Clienti",ops:"Gestione Stelle",livelli:"Riconoscimenti",storico:"Storico Movimenti"};
 
   return (
     <div className="shell">
@@ -297,7 +389,7 @@ function AdminApp({ onLogout }) {
         <header className="topbar">
           <span className="tb-title">{titles[page]}</span>
           <div className="tb-right">
-            <span style={{fontSize:12,color:C.slate}}>⭐ {supply.toLocaleString("it-IT")} stelle in circolazione</span>
+            <span style={{fontSize:12,color:"#8E8E9A"}}>⭐ {supply.toLocaleString("it-IT")} stelle in circolazione</span>
             <span className="status-pill"><span className="dot-live"/>Online</span>
           </div>
         </header>
@@ -308,6 +400,7 @@ function AdminApp({ onLogout }) {
               {page==="clienti" && <PageClienti clienti={clienti} onRefresh={loadData} />}
               {page==="ops"     && <PageOps clienti={clienti} onRefresh={loadData} />}
               {page==="livelli" && <PageLivelli clienti={clienti} onRefresh={loadData} />}
+              {page==="storico" && <PageStorico clienti={clienti} />}
             </>
           )}
         </div>
@@ -333,9 +426,9 @@ function PageDash({ clienti, supply }) {
         <div className="sh"><div className="st">Clienti Recenti</div></div>
         {attivi.length===0 ? <div className="empty"><div className="empty-ico">👥</div>Nessun cliente ancora</div> :
           [...attivi].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5).map(u=>(
-            <div key={u.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:`1px solid ${C.line}`}}>
+            <div key={u.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:"1px solid #E8E8ED"}}>
               <div className="av" style={{background:avBg(fullName(u))}}>{u.nome[0]}</div>
-              <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600}}>{fullName(u)}</div><div style={{fontSize:11,color:C.slate}}>{u.luogo} · {fmtD(u.createdAt)}</div></div>
+              <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600}}>{fullName(u)}</div><div style={{fontSize:11,color:"#8E8E9A"}}>{u.luogo} · {fmtD(u.createdAt)}</div></div>
               <span className={`bx ${u.walletType==="UP"?"bx-purple":u.walletType==="EOA_ESTERNO"?"bx-cyan":"bx-indigo"}`}>{walletLabel(u.walletType)}</span>
             </div>
           ))
@@ -370,7 +463,7 @@ function PageClienti({ clienti, onRefresh }) {
       <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
         <input className="fi" placeholder="Cerca per nome o città…" value={search} onChange={e=>setSearch(e.target.value)} style={{maxWidth:260}}/>
         {[["all","Attivi"],["up","Profilo Avanzato"],["arch","Archiviati"]].map(([v,l])=>(
-          <button key={v} onClick={()=>setFilter(v)} className="btn btn-sm" style={{background:filter===v?C.indigo:C.fog,color:filter===v?"#fff":C.slate,border:`1px solid ${filter===v?C.indigo:C.line}`}}>{l}</button>
+          <button key={v} onClick={()=>setFilter(v)} className="btn btn-sm" style={{background:filter===v?"#5151FF":"#F5F5F7",color:filter===v?"#fff":"#8E8E9A",border:`1px solid ${filter===v?"#5151FF":"#E8E8ED"}`}}>{l}</button>
         ))}
       </div>
       <div className="card">
@@ -390,11 +483,11 @@ function PageClienti({ clienti, onRefresh }) {
                           <div className="av" style={{background:u.status!=="active"?"#bbb":avBg(fullName(u))}}>{u.nome[0]}</div>
                           <div>
                             <div style={{fontWeight:600}}>{fullName(u)}</div>
-                            {u.migrazioneId && <div style={{fontSize:10,color:C.purple}}>↑ profilo aggiornato</div>}
+                            {u.migrazioneId && <div style={{fontSize:10,color:"#9B59B6"}}>↑ profilo aggiornato</div>}
                           </div>
                         </div>
                       </td>
-                      <td><div style={{fontSize:12}}>{u.luogo}</div><div style={{fontSize:11,color:C.slate}}>{u.dataNascita}</div></td>
+                      <td><div style={{fontSize:12}}>{u.luogo}</div><div style={{fontSize:11,color:"#8E8E9A"}}>{u.dataNascita}</div></td>
                       <td><span className={`bx ${u.walletType==="UP"?"bx-purple":u.walletType==="EOA_ESTERNO"?"bx-cyan":"bx-indigo"}`}>{walletLabel(u.walletType)}</span></td>
                       <td><span className={`bx ${u.status==="active"?"bx-green":"bx-gray"}`}>{u.status==="active"?"Attivo":"Archiviato"}</span></td>
                       <td><button className="btn btn-xs btn-g" onClick={()=>setDetail(u)}>Dettaglio</button></td>
@@ -415,199 +508,319 @@ function PageClienti({ clienti, onRefresh }) {
 function PageOps({ clienti, onRefresh }) {
   const [tipo, setTipo] = useState("carica");
   const [f, setF] = useState({da:"",a:"",qty:"",note:""});
+  const [conferma, setConferma] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(null);
+  const [risultato, setRisultato] = useState(null);
   const [err, setErr] = useState("");
   const attivi = clienti.filter(u=>u.status==="active");
 
+  const findNome = id => { const u = attivi.find(x=>x.id===id); return u ? fullName(u) : "—"; };
+
+  const handleConferma = () => {
+    setErr("");
+    const qty = parseInt(f.qty, 10);
+    if (!qty||qty<=0) { setErr("Inserisci un numero di stelle valido"); return; }
+    if (tipo==="carica" && !f.a)  { setErr("Seleziona il cliente"); return; }
+    if (tipo==="scala"  && !f.da) { setErr("Seleziona il cliente"); return; }
+    if (tipo==="trasferisci" && (!f.da||!f.a)) { setErr("Seleziona mittente e destinatario"); return; }
+    if (tipo==="trasferisci" && f.da===f.a)    { setErr("Mittente e destinatario coincidono"); return; }
+    setConferma(true);
+  };
+
   const handleOp = async () => {
-    setErr(""); setLoading(true);
+    setLoading(true);
     try {
       const qty = parseInt(f.qty, 10);
-      if (!qty||qty<=0) { setErr("Inserisci un numero di stelle valido"); setLoading(false); return; }
-
       let res;
-      if (tipo==="carica") {
-        if (!f.a) { setErr("Seleziona il cliente"); setLoading(false); return; }
-        res = await api.caricaPunti({ clienteId: f.a, quantita: qty, nota: f.note||"Carico stelle" });
-      } else if (tipo==="scala") {
-        if (!f.da) { setErr("Seleziona il cliente"); setLoading(false); return; }
-        res = await api.scalaPunti({ clienteId: f.da, quantita: qty, nota: f.note||"Scala stelle" });
-      } else {
-        if (!f.da||!f.a) { setErr("Seleziona mittente e destinatario"); setLoading(false); return; }
-        if (f.da===f.a)  { setErr("Mittente e destinatario coincidono"); setLoading(false); return; }
-        res = await api.trasferisciPunti({ daId: f.da, aId: f.a, quantita: qty, nota: f.note||"Trasferimento stelle" });
-      }
-      setDone(res.data.data);
+      if (tipo==="carica")      res = await api.caricaPunti({ clienteId: f.a, quantita: qty, nota: f.note||"Carico stelle" });
+      else if (tipo==="scala")  res = await api.scalaPunti({ clienteId: f.da, quantita: qty, nota: f.note||"Scala stelle" });
+      else                      res = await api.trasferisciPunti({ daId: f.da, aId: f.a, quantita: qty, nota: f.note||"Trasferimento stelle" });
+      setConferma(false);
+      setRisultato(res.data.data);
       onRefresh();
     } catch(e) {
+      setConferma(false);
       setErr(e.response?.data?.error || "Errore operazione");
     }
     setLoading(false);
   };
 
-  if (done) return (
-    <div className="card cp" style={{maxWidth:500}}>
-      <div style={{textAlign:"center",padding:"32px 0"}}>
-        <div style={{fontSize:54,marginBottom:12}}>✅</div>
-        <div style={{fontWeight:800,fontSize:17}}>Operazione completata</div>
-        <div style={{color:C.slate,fontSize:13,marginTop:6}}>Transazione registrata su LUKSO</div>
-        <div style={{background:C.fog,borderRadius:8,padding:12,margin:"16px 0",fontFamily:"JetBrains Mono, monospace",fontSize:10,color:C.slate,wordBreak:"break-all"}}>{done.txHash}</div>
-        {done.nuovoSaldo !== undefined && <div style={{fontSize:14,fontWeight:600}}>Nuovo saldo: <span style={{color:C.indigo}}>⭐ {done.nuovoSaldo}</span></div>}
-        <button className="btn btn-g" style={{marginTop:20}} onClick={()=>{setDone(null);setF({da:"",a:"",qty:"",note:""});}}>Nuova operazione</button>
-      </div>
-    </div>
+  const righeConferma = () => {
+    const qty = f.qty;
+    if (tipo==="carica")      return [["Operazione","Carica Stelle"],["Cliente",findNome(f.a)],["Stelle",`⭐ ${qty}`],["Causale",f.note||"Carico stelle"]];
+    if (tipo==="scala")       return [["Operazione","Scala Stelle"],["Cliente",findNome(f.da)],["Stelle",`⭐ ${qty}`],["Causale",f.note||"Scala stelle"]];
+    return [["Operazione","Trasferisci Stelle"],["Da",findNome(f.da)],["A",findNome(f.a)],["Stelle",`⭐ ${qty}`],["Causale",f.note||"Trasferimento"]];
+  };
+
+  if (risultato) return (
+    <RisultatoTx
+      titolo="Stelle aggiornate"
+      txHash={risultato.txHash}
+      dettagli={[
+        ["Cliente", risultato.cliente || `${risultato.da} → ${risultato.a}`],
+        risultato.nuovoSaldo !== undefined ? ["Nuovo saldo", `⭐ ${risultato.nuovoSaldo}`] : null,
+        risultato.nuovoSaldoDa !== undefined ? ["Saldo mittente", `⭐ ${risultato.nuovoSaldoDa}`] : null,
+        risultato.nuovoSaldoA  !== undefined ? ["Saldo destinatario", `⭐ ${risultato.nuovoSaldoA}`] : null,
+      ].filter(Boolean)}
+      onChiudi={()=>{ setRisultato(null); setF({da:"",a:"",qty:"",note:""}); }}
+    />
   );
 
   return (
-    <div className="g2">
-      <div className="card cp">
-        <div className="sh"><div className="st">Operazione</div></div>
-        <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:22}}>
-          {[
-            {id:"carica",      ico:"⭐", t:"Carica Stelle",     s:"Aggiungi stelle al conto del cliente"},
-            {id:"scala",       ico:"🎁", t:"Scala Stelle",       s:"Il cliente utilizza le stelle per un premio"},
-            {id:"trasferisci", ico:"↔️", t:"Trasferisci Stelle", s:"Sposta stelle da un cliente a un altro"},
-          ].map(op=>(
-            <div key={op.id} className={`rc ${tipo===op.id?"sel":""}`} onClick={()=>setTipo(op.id)}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:20}}>{op.ico}</span>
-                <div><div className="rc-t">{op.t}</div><div className="rc-s">{op.s}</div></div>
+    <>
+      {conferma && (
+        <ModalConferma
+          titolo="Stai per eseguire una transazione su LUKSO blockchain. Verifica i dettagli prima di procedere."
+          righe={righeConferma()}
+          onConferma={handleOp}
+          onAnnulla={()=>setConferma(false)}
+          loading={loading}
+        />
+      )}
+      <div className="g2">
+        <div className="card cp">
+          <div className="sh"><div className="st">Operazione</div></div>
+          <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:22}}>
+            {[
+              {id:"carica",      ico:"⭐", t:"Carica Stelle",     s:"Aggiungi stelle al conto del cliente"},
+              {id:"scala",       ico:"🎁", t:"Scala Stelle",       s:"Il cliente utilizza le stelle per un premio"},
+              {id:"trasferisci", ico:"↔️", t:"Trasferisci Stelle", s:"Sposta stelle da un cliente a un altro"},
+            ].map(op=>(
+              <div key={op.id} className={`rc ${tipo===op.id?"sel":""}`} onClick={()=>setTipo(op.id)}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:20}}>{op.ico}</span>
+                  <div><div className="rc-t">{op.t}</div><div className="rc-s">{op.s}</div></div>
+                </div>
               </div>
+            ))}
+          </div>
+          {err && <div className="alert-e">{err}</div>}
+          {(tipo==="scala"||tipo==="trasferisci") && (
+            <div className="fg"><label className="fl">{tipo==="scala"?"Cliente":"Da"}</label>
+              <select className="fi" value={f.da} onChange={e=>setF({...f,da:e.target.value})}>
+                <option value="">Seleziona cliente…</option>
+                {attivi.map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
+              </select>
+            </div>
+          )}
+          {(tipo==="carica"||tipo==="trasferisci") && (
+            <div className="fg"><label className="fl">{tipo==="trasferisci"?"A":"Cliente"}</label>
+              <select className="fi" value={f.a} onChange={e=>setF({...f,a:e.target.value})}>
+                <option value="">Seleziona cliente…</option>
+                {attivi.filter(u=>u.id!==f.da).map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
+              </select>
+            </div>
+          )}
+          <div className="fg"><label className="fl">Numero di Stelle</label>
+            <input className="fi" type="number" min="1" placeholder="es. 100" value={f.qty} onChange={e=>setF({...f,qty:e.target.value})}/>
+          </div>
+          <div className="fg"><label className="fl">Causale (opzionale)</label>
+            <input className="fi" placeholder="es. Acquisto del 14/06/2026" value={f.note} onChange={e=>setF({...f,note:e.target.value})}/>
+          </div>
+          <button className="btn btn-p" style={{width:"100%",justifyContent:"center"}} onClick={handleConferma}>
+            Procedi →
+          </button>
+        </div>
+        <div className="card cp">
+          <div className="sh"><div className="st">Guida rapida</div></div>
+          {[
+            {ico:"⭐",t:"Carica Stelle",d:"Accredita stelle sul conto fedeltà del cliente dopo un acquisto."},
+            {ico:"🎁",t:"Scala Stelle",  d:"Il cliente sceglie un premio: le stelle vengono scalate dal suo conto."},
+            {ico:"↔️",t:"Trasferisci",   d:"Sposta stelle tra due clienti o per migrazione profilo."},
+          ].map(op=>(
+            <div key={op.t} style={{display:"flex",gap:12,padding:"11px 0",borderBottom:"1px solid #E8E8ED"}}>
+              <span style={{fontSize:22,flexShrink:0}}>{op.ico}</span>
+              <div><div style={{fontWeight:700,fontSize:13}}>{op.t}</div><div style={{fontSize:12,color:"#8E8E9A",marginTop:2}}>{op.d}</div></div>
             </div>
           ))}
         </div>
-        {err && <div className="alert-e">{err}</div>}
-        {(tipo==="scala"||tipo==="trasferisci") && (
-          <div className="fg"><label className="fl">{tipo==="scala"?"Cliente":"Da"}</label>
-            <select className="fi" value={f.da} onChange={e=>setF({...f,da:e.target.value})}>
-              <option value="">Seleziona cliente…</option>
-              {attivi.map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
-            </select>
-          </div>
-        )}
-        {(tipo==="carica"||tipo==="trasferisci") && (
-          <div className="fg"><label className="fl">{tipo==="trasferisci"?"A":"Cliente"}</label>
-            <select className="fi" value={f.a} onChange={e=>setF({...f,a:e.target.value})}>
-              <option value="">Seleziona cliente…</option>
-              {attivi.filter(u=>u.id!==f.da).map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
-            </select>
-          </div>
-        )}
-        <div className="fg"><label className="fl">Numero di Stelle</label>
-          <input className="fi" type="number" min="1" placeholder="es. 100" value={f.qty} onChange={e=>setF({...f,qty:e.target.value})}/>
-        </div>
-        <div className="fg"><label className="fl">Causale (opzionale)</label>
-          <input className="fi" placeholder="es. Acquisto del 14/06/2026" value={f.note} onChange={e=>setF({...f,note:e.target.value})}/>
-        </div>
-        <button className="btn btn-p" style={{width:"100%",justifyContent:"center"}} disabled={loading} onClick={handleOp}>
-          {loading ? "Transazione in corso…" : "Conferma"}
-        </button>
-        {loading && <p style={{fontSize:11,color:C.slate,textAlign:"center",marginTop:8}}>Attendere, la transazione viene registrata su LUKSO…</p>}
       </div>
-      <div className="card cp">
-        <div className="sh"><div className="st">Guida rapida</div></div>
-        {[
-          {ico:"⭐",t:"Carica Stelle",d:"Accredita stelle sul conto fedeltà del cliente dopo un acquisto."},
-          {ico:"🎁",t:"Scala Stelle",  d:"Il cliente sceglie un premio: le stelle vengono scalate dal suo conto."},
-          {ico:"↔️",t:"Trasferisci",   d:"Sposta stelle tra due clienti o per migrazione profilo."},
-        ].map(op=>(
-          <div key={op.t} style={{display:"flex",gap:12,padding:"11px 0",borderBottom:`1px solid ${C.line}`}}>
-            <span style={{fontSize:22,flexShrink:0}}>{op.ico}</span>
-            <div><div style={{fontWeight:700,fontSize:13}}>{op.t}</div><div style={{fontSize:12,color:C.slate,marginTop:2}}>{op.d}</div></div>
-          </div>
-        ))}
-      </div>
-    </div>
+    </>
   );
 }
 
 // ── Riconoscimenti ─────────────────────────────────────────────────────────────
 function PageLivelli({ clienti, onRefresh }) {
   const [f, setF] = useState({op:"assegna",uid:"",tipoId:"1",targetUid:""});
+  const [conferma, setConferma] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [risultato, setRisultato] = useState(null);
   const [err, setErr] = useState("");
   const attivi = clienti.filter(u=>u.status==="active");
 
+  const findNome = id => { const u = attivi.find(x=>x.id===id); return u ? fullName(u) : "—"; };
+  const nomeBadge = id => LIVELLI_META[id]?.label || id;
+
+  const handleConferma = () => {
+    setErr("");
+    if (!f.uid) { setErr("Seleziona un cliente"); return; }
+    if (f.op==="trasferisci" && !f.targetUid) { setErr("Seleziona il destinatario"); return; }
+    setConferma(true);
+  };
+
   const handle = async () => {
-    setErr(""); setLoading(true);
+    setLoading(true);
     try {
-      if (!f.uid) { setErr("Seleziona un cliente"); setLoading(false); return; }
-      if (f.op==="assegna") {
-        await api.assegnaBadge({ clienteId: f.uid, tipoId: parseInt(f.tipoId) });
-      } else if (f.op==="revoca") {
-        await api.revocaBadge({ clienteId: f.uid, tipoId: parseInt(f.tipoId) });
-      } else {
-        if (!f.targetUid) { setErr("Seleziona il destinatario"); setLoading(false); return; }
-        await api.trasferisciBadge({ daId: f.uid, aId: f.targetUid, tipoId: parseInt(f.tipoId) });
-      }
-      onRefresh(); setDone(true);
+      let res;
+      if (f.op==="assegna")       res = await api.assegnaBadge({ clienteId: f.uid, tipoId: parseInt(f.tipoId) });
+      else if (f.op==="revoca")   res = await api.revocaBadge({ clienteId: f.uid, tipoId: parseInt(f.tipoId) });
+      else                        res = await api.trasferisciBadge({ daId: f.uid, aId: f.targetUid, tipoId: parseInt(f.tipoId) });
+      setConferma(false);
+      setRisultato(res.data.data);
+      onRefresh();
     } catch(e) {
+      setConferma(false);
       setErr(e.response?.data?.error || "Errore operazione");
     }
     setLoading(false);
   };
 
-  if (done) return (
-    <div className="card cp" style={{maxWidth:500}}>
-      <div style={{textAlign:"center",padding:"32px 0"}}>
-        <div style={{fontSize:54,marginBottom:12}}>🏅</div>
-        <div style={{fontWeight:800,fontSize:17}}>Riconoscimento aggiornato</div>
-        <div style={{color:C.slate,fontSize:13,marginTop:6}}>Registrato su LUKSO</div>
-        <button className="btn btn-g" style={{marginTop:20}} onClick={()=>{setDone(false);setF({op:"assegna",uid:"",tipoId:"1",targetUid:""});}}>Nuova operazione</button>
-      </div>
-    </div>
+  const righeConferma = () => [
+    ["Operazione", {assegna:"Assegna",revoca:"Revoca",trasferisci:"Trasferisci"}[f.op]],
+    ["Cliente", findNome(f.uid)],
+    f.op==="trasferisci" ? ["Destinatario", findNome(f.targetUid)] : null,
+    ["Riconoscimento", `${LIVELLI_META[f.tipoId]?.icon} ${nomeBadge(f.tipoId)}`],
+  ].filter(Boolean);
+
+  if (risultato) return (
+    <RisultatoTx
+      titolo="Riconoscimento aggiornato"
+      txHash={risultato.txHash}
+      dettagli={[["Cliente", risultato.cliente], ["Riconoscimento", nomeBadge(risultato.tipoId)]]}
+      onChiudi={()=>{ setRisultato(null); setF({op:"assegna",uid:"",tipoId:"1",targetUid:""}); }}
+    />
   );
 
   return (
-    <div className="g2">
-      <div className="card cp">
-        <div className="sh"><div className="st">Operazione Riconoscimento</div></div>
-        <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:20}}>
-          {[{id:"assegna",t:"🏅 Assegna Riconoscimento",s:"Premia il cliente con un nuovo livello"},
-            {id:"revoca", t:"❌ Revoca Riconoscimento",  s:"Rimuovi un riconoscimento dal cliente"},
-            {id:"trasferisci",t:"↔️ Trasferisci",        s:"Sposta il riconoscimento a un altro cliente"}
-          ].map(op=>(
-            <div key={op.id} className={`rc ${f.op===op.id?"sel":""}`} onClick={()=>setF({...f,op:op.id})}>
-              <div className="rc-t">{op.t}</div><div className="rc-s">{op.s}</div>
+    <>
+      {conferma && (
+        <ModalConferma
+          titolo="Stai per modificare un riconoscimento su LUKSO blockchain."
+          righe={righeConferma()}
+          onConferma={handle}
+          onAnnulla={()=>setConferma(false)}
+          loading={loading}
+        />
+      )}
+      <div className="g2">
+        <div className="card cp">
+          <div className="sh"><div className="st">Operazione Riconoscimento</div></div>
+          <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:20}}>
+            {[{id:"assegna",t:"🏅 Assegna Riconoscimento",s:"Premia il cliente con un nuovo livello"},
+              {id:"revoca", t:"❌ Revoca Riconoscimento",  s:"Rimuovi un riconoscimento dal cliente"},
+              {id:"trasferisci",t:"↔️ Trasferisci",        s:"Sposta il riconoscimento a un altro cliente"}
+            ].map(op=>(
+              <div key={op.id} className={`rc ${f.op===op.id?"sel":""}`} onClick={()=>setF({...f,op:op.id})}>
+                <div className="rc-t">{op.t}</div><div className="rc-s">{op.s}</div>
+              </div>
+            ))}
+          </div>
+          {err && <div className="alert-e">{err}</div>}
+          <div className="fg"><label className="fl">Cliente {f.op==="trasferisci"?"(mittente)":""}</label>
+            <select className="fi" value={f.uid} onChange={e=>setF({...f,uid:e.target.value})}>
+              <option value="">Seleziona cliente…</option>
+              {attivi.map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
+            </select>
+          </div>
+          <div className="fg"><label className="fl">Riconoscimento</label>
+            <select className="fi" value={f.tipoId} onChange={e=>setF({...f,tipoId:e.target.value})}>
+              {Object.entries(LIVELLI_META).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
+            </select>
+          </div>
+          {f.op==="trasferisci" && (
+            <div className="fg"><label className="fl">Destinatario</label>
+              <select className="fi" value={f.targetUid} onChange={e=>setF({...f,targetUid:e.target.value})}>
+                <option value="">Seleziona cliente…</option>
+                {attivi.filter(u=>u.id!==f.uid).map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
+              </select>
+            </div>
+          )}
+          <button className="btn btn-p" style={{width:"100%",justifyContent:"center",marginTop:8}} onClick={handleConferma}>
+            Procedi →
+          </button>
+        </div>
+        <div className="card cp">
+          <div className="sh"><div className="st">Livelli Disponibili</div></div>
+          {Object.entries(LIVELLI_META).map(([k,v])=>(
+            <div key={k} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 0",borderBottom:"1px solid #E8E8ED"}}>
+              <span style={{fontSize:24}}>{v.icon}</span>
+              <div style={{flex:1}}><div style={{fontWeight:700,fontSize:13}}>{v.label}</div></div>
+              <span style={{background:v.color+"18",color:v.color,fontSize:11,padding:"3px 10px",borderRadius:20,fontWeight:600}}>LSP8</span>
             </div>
           ))}
         </div>
-        {err && <div className="alert-e">{err}</div>}
-        <div className="fg"><label className="fl">Cliente {f.op==="trasferisci"?"(mittente)":""}</label>
-          <select className="fi" value={f.uid} onChange={e=>setF({...f,uid:e.target.value})}>
-            <option value="">Seleziona cliente…</option>
-            {attivi.map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
-          </select>
-        </div>
-        <div className="fg"><label className="fl">Riconoscimento</label>
-          <select className="fi" value={f.tipoId} onChange={e=>setF({...f,tipoId:e.target.value})}>
-            {Object.entries(LIVELLI_META).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
-          </select>
-        </div>
-        {f.op==="trasferisci" && (
-          <div className="fg"><label className="fl">Destinatario</label>
-            <select className="fi" value={f.targetUid} onChange={e=>setF({...f,targetUid:e.target.value})}>
+      </div>
+    </>
+  );
+}
+
+// ── Storico Movimenti (Admin) ──────────────────────────────────────────────────
+function PageStorico({ clienti }) {
+  const [clienteId, setClienteId] = useState("");
+  const [dati, setDati] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const attivi = clienti.filter(u=>u.status==="active");
+
+  const cerca = async () => {
+    if (!clienteId) { setErr("Seleziona un cliente"); return; }
+    setErr(""); setLoading(true);
+    try {
+      const res = await api.getCliente(clienteId);
+      setDati(res.data.data);
+    } catch(e) { setErr("Errore caricamento dati"); }
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      <div className="sh"><div className="st">Storico Movimenti</div></div>
+      <div className="card cp" style={{marginBottom:20}}>
+        <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+          <div className="fg" style={{flex:1,marginBottom:0}}>
+            <label className="fl">Seleziona Cliente</label>
+            <select className="fi" value={clienteId} onChange={e=>setClienteId(e.target.value)}>
               <option value="">Seleziona cliente…</option>
-              {attivi.filter(u=>u.id!==f.uid).map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
+              {attivi.map(u=><option key={u.id} value={u.id}>{fullName(u)}</option>)}
             </select>
           </div>
-        )}
-        <button className="btn btn-p" style={{width:"100%",justifyContent:"center",marginTop:8}} disabled={loading} onClick={handle}>
-          {loading ? "Transazione in corso…" : "Conferma"}
-        </button>
+          <button className="btn btn-p" onClick={cerca} disabled={loading}>
+            {loading ? "Caricamento…" : "Cerca"}
+          </button>
+        </div>
+        {err && <div className="alert-e" style={{marginTop:10}}>{err}</div>}
       </div>
-      <div className="card cp">
-        <div className="sh"><div className="st">Livelli Disponibili</div></div>
-        {Object.entries(LIVELLI_META).map(([k,v])=>(
-          <div key={k} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 0",borderBottom:`1px solid ${C.line}`}}>
-            <span style={{fontSize:24}}>{v.icon}</span>
-            <div style={{flex:1}}><div style={{fontWeight:700,fontSize:13}}>{v.label}</div></div>
-            <span style={{background:v.color+"18",color:v.color,fontSize:11,padding:"3px 10px",borderRadius:20,fontWeight:600}}>LSP8</span>
+      {dati && (
+        <div className="card cp">
+          <div className="sh">
+            <div>
+              <div className="st">{dati.nome} {dati.cognome}</div>
+              <div className="ss">Saldo: ⭐ {(dati.stelle||0).toLocaleString("it-IT")} · {dati.badge?.length||0} riconoscimenti</div>
+            </div>
           </div>
-        ))}
-      </div>
+          <div className="kbox" style={{marginBottom:16}}>
+            <div className="kl">Indirizzo Account</div>
+            <div className="kv">{dati.address}</div>
+          </div>
+          <a href={`https://explorer.execution.testnet.lukso.network/address/${dati.address}`} target="_blank" rel="noopener noreferrer" className="btn btn-g btn-sm" style={{textDecoration:"none",marginBottom:16}}>
+            {Ic.link} Vedi su Blockscout
+          </a>
+         <div className="div"/>
+          <div style={{fontWeight:700,fontSize:13,marginBottom:10}}>Riconoscimenti</div>
+          {(!dati.badge||dati.badge.length===0) ? (
+            <div style={{fontSize:13,color:"#8E8E9A"}}>Nessun riconoscimento</div>
+          ) : (
+            <div className="tag-row" style={{marginBottom:16}}>
+              {dati.badge.map(b=>{
+                const m=LIVELLI_META[b];
+                return m ? <span key={b} style={{fontSize:12,padding:"4px 12px",borderRadius:20,background:m.color+"18",color:m.color,fontWeight:600}}>{m.icon} {m.label}</span> : null;
+              })}
+            </div>
+          )}
+          <div className="div"/>
+          <StoricoCliente userId={clienteId} />
+        </div>
+      )}
     </div>
   );
 }
@@ -630,18 +843,16 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
       if (!f.dataNascita)  { setErr("Data di nascita obbligatoria"); setLoading(false); return; }
 
       let walletType, existingAddress;
-      if (eoaMode==="genera")  { walletType = "EOA"; }
+      if (eoaMode==="genera")   { walletType = "EOA"; }
       else if (eoaMode==="esterno") { walletType = "EOA_ESTERNO"; existingAddress = f.existingAddress.trim(); }
       else { walletType = "UP"; existingAddress = f.upAddress.trim(); }
 
-      const payload = {
+      const res = await api.creaCliente({
         nome: f.nome.trim(), cognome: f.cognome.trim(),
         luogo: f.luogo.trim(), dataNascita: f.dataNascita,
         walletType, existingAddress,
         isMigrazione: isMig, migrazioneId: isMig ? migId : null,
-      };
-
-      const res = await api.creaCliente(payload);
+      });
       setResult(res.data.data);
     } catch(e) {
       setErr(e.response?.data?.error || "Errore creazione cliente");
@@ -662,15 +873,22 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
           ))}
           <div className="div"/>
           <div className="kbox"><div className="kl">Indirizzo Account</div><div className="kv">{result.address}</div></div>
-          {result.privateKey && (
+          {result.pin && (
             <>
-              <div className="kwarn">⚠️ Consegna il codice di accesso al cliente. Non sarà più recuperabile.</div>
-              <div className="kbox"><div className="kl">Codice di Accesso Cliente</div><div className="kv">{result.privateKey}</div></div>
-              <button className="btn btn-g btn-sm" style={{marginTop:8}} onClick={()=>{
-                const b=new Blob([`FIDELITYHUB — Credenziali di Accesso\n\nNome: ${result.nome} ${result.cognome}\nLuogo: ${result.luogo}\nData di nascita: ${result.dataNascita}\nTipo profilo: ${walletLabel(result.walletType)}\n\nIndirizzo account: ${result.address}\nCodice di accesso: ${result.privateKey}\n\nConserva questo documento in modo riservato.`],{type:"text/plain"});
-                const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`fidelityhub-${result.cognome}.txt`;a.click();
-              }}>{Ic.dl} Scarica documento di accesso</button>
+              <div className="kwarn">⚠️ Consegna il PIN al cliente. Non sarà più recuperabile senza accedere alla scheda cliente.</div>
+              <div style={{marginBottom:6,fontSize:11,color:"#ffffff38",textTransform:"uppercase",letterSpacing:.8,marginTop:10}}>PIN di Accesso Cliente</div>
+              <div className="pin-box">
+                {result.pin.split("").map((d,i)=>(
+                  <div key={i} className="pin-digit">{d}</div>
+                ))}
+              </div>
             </>
+          )}
+          {result.privateKey && (
+            <button className="btn btn-g btn-sm" style={{marginTop:12}} onClick={()=>{
+              const b=new Blob([`FIDELITYHUB — Credenziali di Accesso\n\nNome: ${result.nome} ${result.cognome}\nLuogo: ${result.luogo}\nData di nascita: ${result.dataNascita}\nTipo profilo: ${walletLabel(result.walletType)}\n\nIndirizzo account: ${result.address}\nPIN di accesso: ${result.pin}\n\nConserva questo documento in modo riservato.`],{type:"text/plain"});
+              const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`fidelityhub-${result.cognome}.txt`;a.click();
+            }}>{Ic.dl} Scarica documento di accesso</button>
           )}
           <div className="factions"><button className="btn btn-p" onClick={onDone}>Fatto</button></div>
         </div>
@@ -684,7 +902,7 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
         <div className="mh"><div className="mt">Nuovo Cliente</div><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
           {err && <div className="alert-e">{err}</div>}
-          <div style={{fontSize:11,fontWeight:700,color:C.slate,textTransform:"uppercase",letterSpacing:.5,marginBottom:10}}>Dati Anagrafici</div>
+          <div style={{fontSize:11,fontWeight:700,color:"#8E8E9A",textTransform:"uppercase",letterSpacing:.5,marginBottom:10}}>Dati Anagrafici</div>
           <div className="fi-2">
             <div className="fg"><label className="fl">Nome</label><input className="fi" placeholder="Mario" value={f.nome} onChange={e=>setF({...f,nome:e.target.value})}/></div>
             <div className="fg"><label className="fl">Cognome</label><input className="fi" placeholder="Rossi" value={f.cognome} onChange={e=>setF({...f,cognome:e.target.value})}/></div>
@@ -694,7 +912,7 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
             <div className="fg"><label className="fl">Data di Nascita</label><input className="fi" type="date" value={f.dataNascita} onChange={e=>setF({...f,dataNascita:e.target.value})}/></div>
           </div>
           <div className="sep"/>
-          <div style={{fontSize:11,fontWeight:700,color:C.slate,textTransform:"uppercase",letterSpacing:.5,marginBottom:10}}>Tipo di Profilo</div>
+          <div style={{fontSize:11,fontWeight:700,color:"#8E8E9A",textTransform:"uppercase",letterSpacing:.5,marginBottom:10}}>Tipo di Profilo</div>
           <div className="fg">
             <div className="rg">
               {[
@@ -750,12 +968,42 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
   );
 }
 
+// ── PIN Viewer ─────────────────────────────────────────────────────────────────
+function PinViewer({ clienteId }) {
+  const [pin, setPin] = useState(null);
+  const [show, setShow] = useState(false);
+
+  const loadPin = async () => {
+    try {
+      const res = await api.getPinCliente(clienteId);
+      setPin(res.data.data.pin);
+      setShow(true);
+    } catch(e) { console.error(e); }
+  };
+
+  return (
+    <>
+      <button className="btn btn-g btn-sm" onClick={show ? ()=>setShow(false) : loadPin}>
+        🔢 {show ? "Nascondi" : "Mostra"} PIN accesso cliente
+      </button>
+      {show && pin && (
+        <div style={{marginTop:10,background:"#0C0C10",borderRadius:10,padding:14}}>
+          <div style={{fontSize:9.5,color:"#ffffff38",textTransform:"uppercase",letterSpacing:.8,marginBottom:8}}>PIN Cliente</div>
+          <div className="pin-box">
+            {pin.split("").map((d,i)=>(
+              <div key={i} className="pin-digit">{d}</div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ── Modal: Dettaglio Cliente ───────────────────────────────────────────────────
 function ModalDettaglio({ user, clienti, onClose, onRefresh }) {
   const [tab, setTab]     = useState("info");
-  const [showCod, setShowCod] = useState(false);
-  const [chiave, setChiave]   = useState(null);
-  const [dati, setDati]       = useState(null);
+  const [dati, setDati]   = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -770,19 +1018,8 @@ function ModalDettaglio({ user, clienti, onClose, onRefresh }) {
     load();
   }, [user.id]);
 
-  const loadChiave = async () => {
-    try {
-      const res = await api.getChiaveCliente(user.id);
-      setChiave(res.data.data.privateKey);
-      setShowCod(true);
-    } catch(e) { console.error(e); }
-  };
-
   const archive = async () => {
-    try {
-      await api.archiviaCliente(user.id);
-      onRefresh();
-    } catch(e) { console.error(e); }
+    try { await api.archiviaCliente(user.id); onRefresh(); } catch(e) { console.error(e); }
   };
 
   const migOrig = user.migrazioneId ? clienti.find(u=>u.id===user.migrazioneId) : null;
@@ -795,15 +1032,15 @@ function ModalDettaglio({ user, clienti, onClose, onRefresh }) {
             <div className="av" style={{background:avBg(fullName(user)),width:40,height:40,fontSize:16}}>{user.nome[0]}</div>
             <div>
               <div className="mt">{fullName(user)}</div>
-              <div style={{fontSize:12,color:C.slate,marginTop:1}}>{user.luogo} · {user.dataNascita} · {walletLabel(user.walletType)}</div>
+              <div style={{fontSize:12,color:"#8E8E9A",marginTop:1}}>{user.luogo} · {user.dataNascita} · {walletLabel(user.walletType)}</div>
             </div>
           </div>
           <button className="mx" onClick={onClose}>×</button>
         </div>
         <div className="mb">
-          <div style={{display:"flex",gap:2,background:C.fog,borderRadius:9,padding:3,marginBottom:20}}>
+          <div style={{display:"flex",gap:2,background:"#F5F5F7",borderRadius:9,padding:3,marginBottom:20}}>
             {[["info","Anagrafica"],["wallet","Accesso"],["blockchain","Saldo & Badge"]].map(([t,l])=>(
-              <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 0",border:"none",borderRadius:7,fontFamily:"inherit",fontSize:12.5,fontWeight:tab===t?700:500,cursor:"pointer",background:tab===t?"#fff":"transparent",color:tab===t?C.ink:C.slate,transition:"all .15s"}}>
+              <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 0",border:"none",borderRadius:7,fontFamily:"inherit",fontSize:12.5,fontWeight:tab===t?700:500,cursor:"pointer",background:tab===t?"#fff":"transparent",color:tab===t?"#0C0C10":"#8E8E9A",transition:"all .15s"}}>
                 {l}
               </button>
             ))}
@@ -816,7 +1053,7 @@ function ModalDettaglio({ user, clienti, onClose, onRefresh }) {
                 <div key={k} className="info-row"><span className="ik">{k}</span><span className="iv">{v}</span></div>
               ))}
               {user.status==="active" && (
-                <div style={{marginTop:20,paddingTop:16,borderTop:`1px solid ${C.line}`}}>
+                <div style={{marginTop:20,paddingTop:16,borderTop:"1px solid #E8E8ED"}}>
                   <button className="btn btn-danger btn-sm" onClick={archive}>{Ic.arch} Archivia cliente</button>
                 </div>
               )}
@@ -828,25 +1065,11 @@ function ModalDettaglio({ user, clienti, onClose, onRefresh }) {
               <div className="info-row"><span className="ik">Tipo profilo</span><span className="iv">{walletLabel(user.walletType)}</span></div>
               <div className="div"/>
               <div className="kbox"><div className="kl">Indirizzo Account</div><div className="kv">{user.address}</div></div>
-              {user.walletType==="EOA" ? (
-                <>
-                  <button className="btn btn-g btn-sm" style={{marginTop:8}} onClick={showCod ? ()=>setShowCod(false) : loadChiave}>
-                    {Ic.chiave} {showCod?"Nascondi":"Mostra"} codice di accesso
-                  </button>
-                  {showCod && chiave && (
-                    <>
-                      <div className="kwarn" style={{marginTop:10}}>⚠️ Condividi solo con il cliente direttamente.</div>
-                      <div className="kbox"><div className="kl">Codice di Accesso</div><div className="kv">{chiave}</div></div>
-                      <button className="btn btn-g btn-sm" style={{marginTop:8}} onClick={()=>{
-                        const b=new Blob([`FIDELITYHUB\n\nNome: ${fullName(user)}\nIndirizzo: ${user.address}\nCodice di accesso: ${chiave}`],{type:"text/plain"});
-                        const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`fidelityhub-${user.cognome}.txt`;a.click();
-                      }}>{Ic.dl} Scarica documento</button>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div style={{marginTop:12,fontSize:13,color:C.slate}}>Accesso esterno — codice non in custodia del sistema.</div>
-              )}
+              <div style={{marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}>
+                <PinViewer clienteId={user.id} />                <a href={`https://explorer.execution.testnet.lukso.network/address/${user.address}`} target="_blank" rel="noopener noreferrer" className="btn btn-g btn-sm" style={{textDecoration:"none"}}>
+                  {Ic.link} Vedi su Blockscout
+                </a>
+              </div>
             </div>
           )}
 
@@ -855,22 +1078,18 @@ function ModalDettaglio({ user, clienti, onClose, onRefresh }) {
               {loading ? <Spinner /> : dati ? (
                 <>
                   <div style={{textAlign:"center",padding:"20px 0"}}>
-                    <div style={{fontSize:48,fontWeight:800,color:C.indigo}}>⭐ {dati.stelle?.toLocaleString("it-IT") || 0}</div>
-                    <div style={{fontSize:13,color:C.slate,marginTop:4}}>Stelle on-chain · LUKSO</div>
+                    <div style={{fontSize:48,fontWeight:800,color:"#5151FF"}}>⭐ {(dati.stelle||0).toLocaleString("it-IT")}</div>
+                    <div style={{fontSize:13,color:"#8E8E9A",marginTop:4}}>Stelle on-chain · LUKSO</div>
                   </div>
                   <div className="div"/>
                   <div style={{fontWeight:700,fontSize:13,marginBottom:10}}>Riconoscimenti</div>
                   {(!dati.badge||dati.badge.length===0) ? (
-                    <div style={{fontSize:13,color:C.slate}}>Nessun riconoscimento ancora</div>
+                    <div style={{fontSize:13,color:"#8E8E9A"}}>Nessun riconoscimento ancora</div>
                   ) : (
                     <div className="tag-row">
                       {dati.badge.map(b=>{
-                        const m = LIVELLI_META[b];
-                        return m ? (
-                          <span key={b} style={{fontSize:12,padding:"4px 12px",borderRadius:20,background:m.color+"18",color:m.color,fontWeight:600}}>
-                            {m.icon} {m.label}
-                          </span>
-                        ) : null;
+                        const m=LIVELLI_META[b];
+                        return m ? <span key={b} style={{fontSize:12,padding:"4px 12px",borderRadius:20,background:m.color+"18",color:m.color,fontWeight:600}}>{m.icon} {m.label}</span> : null;
                       })}
                     </div>
                   )}
@@ -884,10 +1103,74 @@ function ModalDettaglio({ user, clienti, onClose, onRefresh }) {
   );
 }
 
+function StoricoCliente({ userId }) {
+  const [eventi, setEventi] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  const BADGE_NOMI = {1:"Gold",2:"Silver",3:"VIP",4:"Early Adopter",5:"Top Cliente"};
+  const BADGE_ICON = {1:"🥇",2:"🥈",3:"💎",4:"🚀",5:"⭐"};
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await api.getStorico(userId);
+        setEventi(res.data.data);
+      } catch(e) { setErr("Errore caricamento storico"); }
+      setLoading(false);
+    };
+    load();
+  }, [userId]);
+
+  const fmtTs = ts => new Date(ts).toLocaleDateString("it-IT",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+
+  const descr = ev => {
+    switch(ev.tipo) {
+      case "carica":        return { ico:"⭐", label:"Stelle ricevute",      color:"#00C48C", amt:`+${ev.qty} stelle`, nota: ev.nota };
+      case "scala":         return { ico:"🎁", label:"Stelle utilizzate",    color:"#FF4757", amt:`-${ev.qty} stelle`, nota: ev.nota };
+      case "trasferisci_in":return { ico:"↙️", label:"Stelle ricevute",      color:"#00C48C", amt:`+${ev.qty} stelle`, nota: ev.nota };
+      case "trasferisci_out":return{ ico:"↗️", label:"Stelle inviate",       color:"#FF4757", amt:`-${ev.qty} stelle`, nota: ev.nota };
+      case "badge_in":      return { ico:BADGE_ICON[ev.tipoId]||"🏅", label:`Riconoscimento ${BADGE_NOMI[ev.tipoId]||""} ricevuto`, color:"#FFB020", amt:"", nota:"" };
+      case "badge_rev":     return { ico:"❌", label:`Riconoscimento ${BADGE_NOMI[ev.tipoId]||""} revocato`, color:"#FF4757", amt:"", nota:"" };
+      case "badge_tx_in":   return { ico:BADGE_ICON[ev.tipoId]||"🏅", label:`Riconoscimento ${BADGE_NOMI[ev.tipoId]||""} ricevuto`, color:"#FFB020", amt:"", nota:"" };
+      case "badge_tx_out":  return { ico:"↗️", label:`Riconoscimento ${BADGE_NOMI[ev.tipoId]||""} trasferito`, color:"#8E8E9A", amt:"", nota:"" };
+      default: return { ico:"📋", label:ev.tipo, color:"#8E8E9A", amt:"", nota:"" };
+    }
+  };
+
+  return (
+    <div>
+      <div className="sh"><div className="st">Storico Movimenti</div><div className="ss">{eventi.length} operazioni</div></div>
+      <div className="card cp">
+        {loading ? <Spinner /> : err ? <div className="alert-e">{err}</div> :
+         eventi.length===0 ? <div className="empty"><div className="empty-ico">📋</div>Nessun movimento ancora</div> :
+         eventi.map((ev,i) => {
+           const d = descr(ev);
+           return (
+             <div key={i} className="tx-row">
+               <div className="tx-ic" style={{background:d.color+"18",fontSize:18}}>{d.ico}</div>
+               <div className="tx-info">
+                 <div className="tx-desc">{d.label}</div>
+                 {d.nota && <div style={{fontSize:11,color:"#8E8E9A",marginTop:1}}>{d.nota}</div>}
+                 <div className="tx-hash" onClick={()=>window.open(`https://explorer.execution.testnet.lukso.network/tx/${ev.hash}`,"_blank")}>{ev.hash}</div>
+               </div>
+               <div className="tx-right">
+                 {d.amt && <div className="tx-amt" style={{color:d.color}}>{d.amt}</div>}
+                 <div className="tx-date">{fmtTs(ev.ts)}</div>
+               </div>
+             </div>
+           );
+         })
+        }
+      </div>
+    </div>
+  );
+}
+
 // ── Client App ─────────────────────────────────────────────────────────────────
 function ClientApp({ userId, onLogout }) {
   const [tab, setTab] = useState("wallet");
-  const [showCod, setShowCod] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -908,6 +1191,7 @@ function ClientApp({ userId, onLogout }) {
   const nav = [
     {id:"wallet",  l:"Il mio Wallet",    ic:Ic.dash},
     {id:"livelli", l:"I miei Livelli",   ic:Ic.livelli},
+    {id:"storico", l:"Storico Movimenti",ic:Ic.storico},
     {id:"profilo", l:"Profilo",          ic:Ic.profilo},
   ];
 
@@ -966,11 +1250,7 @@ function ClientApp({ userId, onLogout }) {
                   <div className="tag-row">
                     {user.badge.map(b=>{
                       const m=LIVELLI_META[b];
-                      return m ? (
-                        <span key={b} style={{fontSize:13,padding:"6px 14px",borderRadius:20,background:m.color+"18",color:m.color,fontWeight:600}}>
-                          {m.icon} {m.label}
-                        </span>
-                      ) : null;
+                      return m ? <span key={b} style={{fontSize:13,padding:"6px 14px",borderRadius:20,background:m.color+"18",color:m.color,fontWeight:600}}>{m.icon} {m.label}</span> : null;
                     })}
                   </div>
                 )}
@@ -991,7 +1271,7 @@ function ClientApp({ userId, onLogout }) {
                       <div key={b} className="card cp" style={{textAlign:"center",borderTop:`3px solid ${m.color}`}}>
                         <div style={{fontSize:52,marginBottom:10}}>{m.icon}</div>
                         <div style={{fontWeight:800,fontSize:17,marginBottom:4}}>{m.label}</div>
-                        <div style={{fontSize:12,color:C.slate}}>Riconoscimento fedeltà</div>
+                        <div style={{fontSize:12,color:"#8E8E9A"}}>Riconoscimento fedeltà</div>
                         <span style={{display:"inline-block",marginTop:12,fontSize:11,padding:"4px 14px",borderRadius:20,background:m.color+"18",color:m.color,fontWeight:600}}>✓ Verificato su LUKSO</span>
                       </div>
                     ) : null;
@@ -1000,6 +1280,8 @@ function ClientApp({ userId, onLogout }) {
               )}
             </div>
           )}
+
+          {tab==="storico" && <StoricoCliente userId={userId} />}
 
           {tab==="profilo" && (
             <div>
@@ -1012,33 +1294,14 @@ function ClientApp({ userId, onLogout }) {
                   ))}
                 </div>
                 <div className="card cp">
-                  <div style={{fontWeight:700,marginBottom:14}}>Accesso</div>
+                  <div style={{fontWeight:700,marginBottom:14}}>Il mio Account</div>
                   <div className="info-row"><span className="ik">Tipo profilo</span><span className="iv">{walletLabel(user.walletType)}</span></div>
-                  <div className="info-row"><span className="ik">Stelle accumulate</span><span className="iv" style={{color:C.indigo}}>⭐ {(user.stelle||0).toLocaleString("it-IT")}</span></div>
+                  <div className="info-row"><span className="ik">Stelle accumulate</span><span className="iv" style={{color:"#5151FF"}}>⭐ {(user.stelle||0).toLocaleString("it-IT")}</span></div>
                   <div className="info-row"><span className="ik">Riconoscimenti</span><span className="iv">{(user.badge||[]).length}</span></div>
                   <div className="kbox" style={{marginTop:12}}><div className="kl">Indirizzo Account</div><div className="kv">{user.address}</div></div>
-                  {user.walletType==="EOA" && (
-                    <>
-                      <button className="btn btn-g btn-sm" style={{marginTop:8}} onClick={()=>{
-                        if (!showCod) {
-                          api.getChiaveCliente(userId).then(r=>{
-                            setUser(u=>({...u,_chiave:r.data.data.privateKey}));
-                            setShowCod(true);
-                          });
-                        } else setShowCod(false);
-                      }}>{Ic.chiave} {showCod?"Nascondi":"Mostra"} codice di accesso</button>
-                      {showCod && user._chiave && (
-                        <>
-                          <div className="kwarn" style={{marginTop:8}}>⚠️ Non condividere mai il tuo codice.</div>
-                          <div className="kbox"><div className="kl">Il tuo Codice di Accesso</div><div className="kv">{user._chiave}</div></div>
-                          <button className="btn btn-g btn-sm" style={{marginTop:8}} onClick={()=>{
-                            const b=new Blob([`FIDELITYHUB\n\nNome: ${fullName(user)}\nIndirizzo: ${user.address}\nCodice: ${user._chiave}`],{type:"text/plain"});
-                            const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="mio-accesso.txt";a.click();
-                          }}>{Ic.dl} Salva codice</button>
-                        </>
-                      )}
-                    </>
-                  )}
+                  <a href={`https://explorer.execution.testnet.lukso.network/address/${user.address}`} target="_blank" rel="noopener noreferrer" className="btn btn-g btn-sm" style={{marginTop:8,textDecoration:"none"}}>
+                    {Ic.link} Vedi su Blockscout
+                  </a>
                 </div>
               </div>
             </div>

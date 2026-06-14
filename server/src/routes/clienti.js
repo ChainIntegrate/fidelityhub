@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const clienti = store.getAll().map(u => {
-      const { encryptedPk, ...safe } = u;
+      const { encryptedPk, encryptedPin, ...safe } = u;
       return safe;
     });
     res.json({ success: true, data: clienti });
@@ -34,8 +34,35 @@ router.get("/:id", async (req, res) => {
       blockchain.getBadgeCliente(user.address),
     ]);
 
-    const { encryptedPk, ...safe } = user;
+    const { encryptedPk, encryptedPin, ...safe } = user;
     res.json({ success: true, data: { ...safe, stelle, badge: badgeIds } });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── POST /api/clienti/login ────────────────────────────────────────────────────
+// Login cliente tramite PIN a 6 cifre
+router.post("/login", async (req, res) => {
+  try {
+    const { pin } = req.body;
+    if (!pin) return res.status(400).json({ success: false, error: "PIN obbligatorio" });
+
+    const { decifra } = require("../services/crypto");
+    const users = store.getAll();
+
+    for (const u of users) {
+      if (!u.encryptedPin) continue;
+      try {
+        const decPin = decifra(u.encryptedPin);
+        if (decPin === pin.trim()) {
+          const { encryptedPk, encryptedPin, ...safe } = u;
+          return res.json({ success: true, data: safe });
+        }
+      } catch { continue; }
+    }
+
+    res.status(401).json({ success: false, error: "PIN non valido" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -64,13 +91,11 @@ router.post("/crea", async (req, res) => {
     let address, encryptedPk = null, privateKeyChiaro = null;
 
     if (walletType === "EOA") {
-      // Genera nuovo EOA
       const wallet = ethers.Wallet.createRandom();
-      address        = wallet.address;
+      address          = wallet.address;
       privateKeyChiaro = wallet.privateKey;
-      encryptedPk    = cifra(wallet.privateKey);
+      encryptedPk      = cifra(wallet.privateKey);
     } else if (walletType === "EOA_ESTERNO" || walletType === "UP") {
-      // Usa address esterno fornito
       if (!existingAddress || !ethers.isAddress(existingAddress)) {
         return res.status(400).json({ success: false, error: "Indirizzo non valido" });
       }
@@ -83,6 +108,10 @@ router.post("/crea", async (req, res) => {
     if (store.addressExists(address)) {
       return res.status(400).json({ success: false, error: "Questo indirizzo è già associato a un altro cliente" });
     }
+
+    // Genera PIN a 6 cifre
+    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    const encryptedPin = cifra(pin);
 
     // Se è migrazione, archivia il profilo precedente
     if (isMigrazione && migrazioneId) {
@@ -97,7 +126,8 @@ router.post("/crea", async (req, res) => {
       luogo,
       dataNascita,
       address,
-      encryptedPk,  // null se wallet esterno
+      encryptedPk,
+      encryptedPin,
       walletType,
       status:       "active",
       createdAt:    Date.now(),
@@ -106,13 +136,14 @@ router.post("/crea", async (req, res) => {
 
     store.add(newUser);
 
-    // Risposta — include la chiave in chiaro SOLO alla creazione
-    const { encryptedPk: _, ...safe } = newUser;
+    // Risposta — include chiave e PIN in chiaro SOLO alla creazione
+    const { encryptedPk: _, encryptedPin: __, ...safe } = newUser;
     res.json({
       success: true,
       data: {
         ...safe,
-        privateKey: privateKeyChiaro, // null se wallet esterno
+        privateKey: privateKeyChiaro,
+        pin,
       }
     });
 
@@ -149,29 +180,29 @@ router.get("/:id/chiave", async (req, res) => {
   }
 });
 
-// ── POST /api/clienti/login ────────────────────────────────────────────────────
-// Verifica codice di accesso cliente
-router.post("/login", async (req, res) => {
+// ── GET /api/clienti/:id/pin ───────────────────────────────────────────────────
+// Restituisce il PIN decifrato (solo per admin)
+router.get("/:id/pin", async (req, res) => {
   try {
-    const { codice } = req.body;
-    if (!codice) return res.status(400).json({ success: false, error: "Codice obbligatorio" });
+    const user = store.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, error: "Cliente non trovato" });
+    if (!user.encryptedPin) return res.status(400).json({ success: false, error: "PIN non disponibile" });
 
     const { decifra } = require("../services/crypto");
-    const users = store.getAll();
+    const pin = decifra(user.encryptedPin);
+    res.json({ success: true, data: { pin } });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
-    // Cerca il cliente la cui chiave privata corrisponde al codice
-    for (const u of users) {
-      if (!u.encryptedPk) continue;
-      try {
-        const pk = decifra(u.encryptedPk);
-        if (pk === codice.trim()) {
-          const { encryptedPk, ...safe } = u;
-          return res.json({ success: true, data: safe });
-        }
-      } catch { continue; }
-    }
-
-    res.status(401).json({ success: false, error: "Codice di accesso non valido" });
+// ── GET /api/clienti/:id/storico ───────────────────────────────────────────────
+router.get("/:id/storico", async (req, res) => {
+  try {
+    const user = store.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, error: "Cliente non trovato" });
+    const storico = await blockchain.getStorico(user.address);
+    res.json({ success: true, data: storico });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

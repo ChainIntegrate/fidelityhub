@@ -31,4 +31,6 @@ export const aggiungiBadge     = (data)     => API.post("/badge/aggiungi", data)
 // ── Health ─────────────────────────────────────────────────────────────────────
 export const getHealth         = ()         => API.get("/health");
 
-export const loginCliente = (codice) => API.post("/clienti/login", { codice });
+export const loginCliente  = (pin)  => API.post("/clienti/login", { pin });
+export const getPinCliente = (id)   => API.get(`/clienti/${id}/pin`);
+export const getStorico = (id) => API.get(`/clienti/${id}/storico`);

@@ -149,4 +149,32 @@ router.get("/:id/chiave", async (req, res) => {
   }
 });
 
+// ── POST /api/clienti/login ────────────────────────────────────────────────────
+// Verifica codice di accesso cliente
+router.post("/login", async (req, res) => {
+  try {
+    const { codice } = req.body;
+    if (!codice) return res.status(400).json({ success: false, error: "Codice obbligatorio" });
+
+    const { decifra } = require("../services/crypto");
+    const users = store.getAll();
+
+    // Cerca il cliente la cui chiave privata corrisponde al codice
+    for (const u of users) {
+      if (!u.encryptedPk) continue;
+      try {
+        const pk = decifra(u.encryptedPk);
+        if (pk === codice.trim()) {
+          const { encryptedPk, ...safe } = u;
+          return res.json({ success: true, data: safe });
+        }
+      } catch { continue; }
+    }
+
+    res.status(401).json({ success: false, error: "Codice di accesso non valido" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

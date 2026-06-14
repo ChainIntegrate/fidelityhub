@@ -4,17 +4,17 @@
   "deployedAt": "2026-06-14",
   "contracts": {
     "FidelityToken": {
-      "address": "0xdB419a51801347de1FcF6F6805e64c095DBD4881",
+      "address": "0x6571F63447E0CcC811011ec3432354E0DCF68d31",
       "standard": "LSP7",
       "license": "BUSL-1.1",
       "isNonDivisible": true
     },
     "FidelityBadge": {
-      "address": "0x82FCf1E3Ef4DB500c32900897FCc5bdBCC76b7F4",
+      "address": "0xab5B9EBD2e529f7515904a1b40c27C4d8c5BFE2d",
       "standard": "LSP8",
       "license": "BUSL-1.1"
     }
   },
-  "deployer": "0x84B883180265948505BFe49F0b78e1dAaECa0156",
+  "deployer": "0x30D5e2c9BEc1A75515b88d6c80528e9003AeA9EF",
   "adminCliente": "0x30D5e2c9BEc1A75515b88d6c80528e9003AeA9EF"
 }

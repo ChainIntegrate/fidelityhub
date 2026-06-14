@@ -1,8 +1,19 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.19;
 
-import "@lukso/lsp-smart-contracts/contracts/LSP8IdentifiableDigitalAsset/LSP8IdentifiableDigitalAsset.sol";
+import { LSP8IdentifiableDigitalAsset } from "@lukso/lsp8-contracts/contracts/LSP8IdentifiableDigitalAsset.sol";
+import { _LSP4_TOKEN_TYPE_NFT } from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
+import { _LSP8_TOKENID_FORMAT_NUMBER } from "@lukso/lsp8-contracts/contracts/LSP8Constants.sol";
 
+/**
+ * @title FidelityBadge
+ * @dev Badge NFT LSP8 per i riconoscimenti fedeltà su LUKSO
+ * - Ogni badge è un NFT unico identificato da tokenId
+ * - Tipi di badge configurabili dall'admin (scalabile)
+ * - Un solo badge per tipo per wallet
+ * - Trasferibile tra EOA e Universal Profile
+ * - Revocabile dall'admin
+ */
 contract FidelityBadge is LSP8IdentifiableDigitalAsset {
 
     error NotAuthorized(address caller);
@@ -37,12 +48,18 @@ contract FidelityBadge is LSP8IdentifiableDigitalAsset {
         string memory name,
         string memory symbol,
         address owner
-    ) LSP8IdentifiableDigitalAsset(name, symbol, owner, 0, 0) {
-        _aggiungiBadge("Gold", "Cliente di livello Gold", "ipfs://");
-        _aggiungiBadge("Silver", "Cliente di livello Silver", "ipfs://");
-        _aggiungiBadge("VIP", "Cliente VIP", "ipfs://");
-        _aggiungiBadge("Early Adopter", "Primo ad aderire al programma", "ipfs://");
-        _aggiungiBadge("Top Cliente", "Il migliore cliente del mese", "ipfs://");
+    ) LSP8IdentifiableDigitalAsset(
+        name,
+        symbol,
+        owner,
+        _LSP4_TOKEN_TYPE_NFT,
+        _LSP8_TOKENID_FORMAT_NUMBER
+    ) {
+        _aggiungiBadge("Gold",         "Cliente di livello Gold",         "");
+        _aggiungiBadge("Silver",       "Cliente di livello Silver",       "");
+        _aggiungiBadge("VIP",          "Cliente VIP",                     "");
+        _aggiungiBadge("Early Adopter","Primo ad aderire al programma",   "");
+        _aggiungiBadge("Top Cliente",  "Il migliore cliente del mese",    "");
     }
 
     modifier soloAdmin() {
@@ -114,6 +131,16 @@ contract FidelityBadge is LSP8IdentifiableDigitalAsset {
         tipoDelToken[tokenId] = tipoId;
         tipiBadge[tipoId].totaleMintati++;
         _mint(cliente, tokenId, true, "");
+
+        // Setta metadati LSP4 per questo tokenId
+        bytes32 metaKey = keccak256(abi.encodePacked("LSP8MetadataJSON:", tokenId));
+        string memory meta = string(abi.encodePacked(
+            '{"LSP4Metadata":{"name":"', tipiBadge[tipoId].nome,
+            '","description":"', tipiBadge[tipoId].descrizione,
+            '","attributes":[{"key":"type","value":"FidelityBadge"},{"key":"level","value":"', tipiBadge[tipoId].nome, '"}]}}'
+        ));
+        _setData(metaKey, bytes(meta));
+
         emit BadgeAssegnato(cliente, tipoId, tokenId);
     }
 

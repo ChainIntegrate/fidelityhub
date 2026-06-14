@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.19;
 
-import "@lukso/lsp-smart-contracts/contracts/LSP7DigitalAsset/LSP7DigitalAsset.sol";
+import { LSP7DigitalAsset } from "@lukso/lsp7-contracts/contracts/LSP7DigitalAsset.sol";
+import { _LSP4_TOKEN_TYPE_TOKEN } from "@lukso/lsp4-contracts/contracts/LSP4Constants.sol";
 
 /**
  * @title FidelityToken
@@ -13,17 +14,14 @@ import "@lukso/lsp-smart-contracts/contracts/LSP7DigitalAsset/LSP7DigitalAsset.s
  */
 contract FidelityToken is LSP7DigitalAsset {
 
-    // ── Errori custom ──────────────────────────────────────────────────────────
     error NotAuthorized(address caller);
     error InvalidAmount(uint256 amount);
     error InsufficientBalance(address account, uint256 balance, uint256 required);
 
-    // ── Eventi ─────────────────────────────────────────────────────────────────
     event PointsLoaded(address indexed to, uint256 amount, string note);
     event PointsScaled(address indexed from, uint256 amount, string note);
     event PointsTransferred(address indexed from, address indexed to, uint256 amount, string note);
 
-    // ── Constructor ────────────────────────────────────────────────────────────
     constructor(
         string memory name,
         string memory symbol,
@@ -32,11 +30,10 @@ contract FidelityToken is LSP7DigitalAsset {
         name,
         symbol,
         owner,
-        0,
-        true    // isNonDivisible = true → decimals = 0, solo interi
+        _LSP4_TOKEN_TYPE_TOKEN,
+        true  // isNonDivisible = true → decimals = 0
     ) {}
 
-// ── Carica Punti (mint) ────────────────────────────────────────────────────
     function caricaPunti(
         address cliente,
         uint256 quantita,
@@ -48,7 +45,6 @@ contract FidelityToken is LSP7DigitalAsset {
         emit PointsLoaded(cliente, quantita, nota);
     }
 
-    // ── Scala Punti (burn) ─────────────────────────────────────────────────────
     function scalaPunti(
         address cliente,
         uint256 quantita,
@@ -62,7 +58,6 @@ contract FidelityToken is LSP7DigitalAsset {
         emit PointsScaled(cliente, quantita, nota);
     }
 
-    // ── Trasferisci Punti admin ────────────────────────────────────────────────
     function trasferisciPunti(
         address da,
         address a,
@@ -77,12 +72,11 @@ contract FidelityToken is LSP7DigitalAsset {
         emit PointsTransferred(da, a, quantita, nota);
     }
 
-    // ── Saldo cliente ──────────────────────────────────────────────────────────
     function saldoCliente(address cliente) external view returns (uint256) {
         return balanceOf(cliente);
     }
 
-    // ── Supply totale ──────────────────────────────────────────────────────────
     function supplyTotale() external view returns (uint256) {
         return totalSupply();
-    }}
+    }
+}

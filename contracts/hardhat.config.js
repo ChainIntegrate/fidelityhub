@@ -1,10 +1,9 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
-/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
-    version: "0.8.19",
+    version: "0.8.28",
     settings: {
       optimizer: {
         enabled: true,
@@ -16,6 +15,7 @@ module.exports = {
     luksoTestnet: {
       url: "https://rpc.testnet.lukso.network",
       chainId: 4201,
-accounts: [process.env.PRIVATE_KEY],    },
+      accounts: [(process.env.ADMIN_PRIVATE_KEY || process.env.PRIVATE_KEY).replace('0x', '')],
+    },
   },
 };

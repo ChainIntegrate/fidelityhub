@@ -240,7 +240,7 @@ function Login({ onLogin }) {
               <button className="btn btn-p" style={{width:"100%",justifyContent:"center"}} disabled={loading} onClick={doAdmin}>
   {loading ? "Verifica in corso…" : "Accedi al Gestionale"}
 </button>
-              <p style={{fontSize:11,color:"#8E8E9A",textAlign:"center",marginTop:10}}>admin@fidelityhub.io / admin123</p>
+
             </>
           ) : (
             <>
@@ -838,7 +838,7 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
   const [eoaMode, setEoaMode] = useState("genera");
   const [isMig,   setIsMig]   = useState(false);
   const [migId,   setMigId]   = useState("");
-  const [f, setF] = useState({nome:"",cognome:"",luogo:"",dataNascita:"",existingAddress:"",upAddress:""});
+  const [f, setF] = useState({nome:"",cognome:"",luogo:"",dataNascita:"",email:"",existingAddress:"",upAddress:""});
   const [result,  setResult]  = useState(null);
   const [loading, setLoading] = useState(false);
   const [err,     setErr]     = useState("");
@@ -918,6 +918,11 @@ function ModalCreaCliente({ onClose, onDone, clienti }) {
           <div className="fi-2">
             <div className="fg"><label className="fl">Luogo di Nascita</label><input className="fi" placeholder="Roma" value={f.luogo} onChange={e=>setF({...f,luogo:e.target.value})}/></div>
             <div className="fg"><label className="fl">Data di Nascita</label><input className="fi" type="date" value={f.dataNascita} onChange={e=>setF({...f,dataNascita:e.target.value})}/></div>
+            <div className="fg">
+  <label className="fl">Email</label>
+  <input className="fi" type="email" placeholder="mario@email.it" value={f.email||""} onChange={e=>setF({...f,email:e.target.value})}/>
+  <p className="fhint">Il PIN di accesso verrà inviato a questo indirizzo</p>
+</div>
           </div>
           <div className="sep"/>
           <div style={{fontSize:11,fontWeight:700,color:"#8E8E9A",textTransform:"uppercase",letterSpacing:.5,marginBottom:10}}>Tipo di Profilo</div>

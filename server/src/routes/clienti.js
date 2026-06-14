@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require("uuid");
 const { cifra } = require("../services/crypto");
 const store = require("../services/userStore");
 const blockchain = require("../services/blockchain");
+const { inviaPin } = require("../services/email");
 
 const router = express.Router();
 
@@ -72,12 +73,16 @@ router.post("/login", async (req, res) => {
 // Crea nuovo cliente con EOA generato o esistente
 router.post("/crea", async (req, res) => {
   try {
-    const { nome, cognome, luogo, dataNascita, walletType, existingAddress, isMigrazione, migrazioneId } = req.body;
+   const { nome, cognome, luogo, dataNascita, email, walletType, existingAddress, isMigrazione, migrazioneId } = req.body;
 
     // Validazione
     if (!nome || !cognome || !luogo || !dataNascita) {
       return res.status(400).json({ success: false, error: "Dati anagrafici incompleti" });
     }
+
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+  return res.status(400).json({ success: false, error: "Email non valida" });
+}
 
     // Controlla duplicati
     const duplicati = store.findByName(nome, cognome);
@@ -123,6 +128,7 @@ router.post("/crea", async (req, res) => {
       id:           uuidv4(),
       nome,
       cognome,
+      email,
       luogo,
       dataNascita,
       address,
@@ -135,6 +141,16 @@ router.post("/crea", async (req, res) => {
     };
 
     store.add(newUser);
+
+    // Invia PIN via email se presente
+if (pin && email) {
+  try {
+    await inviaPin(email, nome, pin);
+  } catch(e) {
+    console.error("Errore invio email:", e.message);
+    // Non blocchiamo la creazione se l'email fallisce
+  }
+}
 
     // Risposta — include chiave e PIN in chiaro SOLO alla creazione
     const { encryptedPk: _, encryptedPin: __, ...safe } = newUser;

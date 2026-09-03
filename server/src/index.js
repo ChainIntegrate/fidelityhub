@@ -62,7 +62,7 @@ async function start() {
     // Inizializza connessione blockchain
     blockchain.init();
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '127.0.0.1', () => {
       console.log("═══════════════════════════════════════");
       console.log("  FidelityHub Server");
       console.log("═══════════════════════════════════════");
